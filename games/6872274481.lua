@@ -1769,6 +1769,454 @@ run(function()
 end)
 	
 run(function()
+    local connection
+
+    FlaglessHighjump = vape.Categories.Blatant:CreateModule({
+        Name = 'FlaglessHighjump',
+        Function = function(callback)
+            local player = game:GetService("Players").LocalPlayer
+            local defaultJumpPower = 50
+
+            local function applyHighJump()
+                local character = player.Character or player.CharacterAdded:Wait()
+                local humanoid = character:WaitForChild("Humanoid")
+                humanoid.UseJumpPower = true
+                humanoid.JumpPower = 205
+            end
+
+            local function resetJump()
+                local character = player.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.JumpPower = defaultJumpPower
+                    end
+                end
+            end
+
+            if callback then
+                applyHighJump()
+                connection = player.CharacterAdded:Connect(function()
+                    task.wait(0.1)
+                    applyHighJump()
+                end)
+            else
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                resetJump()
+            end
+        end,
+        Tooltip = 'Bedwars has the worst AC LOL'
+    })
+end)
+															
+run(function()
+    local inputService = game:GetService("UserInputService")
+    local runService = game:GetService("RunService")
+    local lplr = game.Players.LocalPlayer
+    local vector = Vector3
+
+    local Velocity
+
+    InfiniteJump = vape.Categories.Blatant:CreateModule({
+        Name = 'InfiniteJump',
+        Function = function(callback)
+            if callback then
+                InfiniteJump:Clean(inputService.InputBegan:Connect(function(input, gameProcessed)
+                    if gameProcessed then return end
+                    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
+                        while inputService:IsKeyDown(Enum.KeyCode.Space) do
+                            local PrimaryPart = lplr.Character and lplr.Character.PrimaryPart
+                            if entitylib.isAlive and PrimaryPart then
+                                PrimaryPart.Velocity = vector.new(PrimaryPart.Velocity.X, Velocity.Value, PrimaryPart.Velocity.Z)
+                            end
+                            task.wait()
+                        end
+                    end
+                end))
+
+                if inputService.TouchEnabled then
+                    local Jumping = false
+                    local JumpButton = lplr.PlayerGui:WaitForChild("TouchGui"):WaitForChild("TouchControlFrame"):WaitForChild("JumpButton")
+
+                    InfiniteJump:Clean(JumpButton.MouseButton1Down:Connect(function()
+                        Jumping = true
+                    end))
+
+                    InfiniteJump:Clean(JumpButton.MouseButton1Up:Connect(function()
+                        Jumping = false
+                    end))
+
+                    InfiniteJump:Clean(runService.RenderStepped:Connect(function()
+                        if Jumping and entitylib.isAlive then
+                            local PrimaryPart = lplr.Character and lplr.Character.PrimaryPart
+                            if PrimaryPart then
+                                PrimaryPart.Velocity = vector.new(PrimaryPart.Velocity.X, Velocity.Value, PrimaryPart.Velocity.Z)
+                            end
+                        end
+                    end))
+                end
+            end
+        end,
+        Tooltip = "Allows infinite jumping"
+    })
+
+    Velocity = InfiniteJump:CreateSlider({
+        Name = 'Velocity',
+        Min = 50,
+        Max = 300,
+        Default = 50
+    })
+end)
+
+run(function()
+    ToyAnimation = vape.Categories.Blatant:CreateModule({
+        Name = 'ToyAnimation',
+        Function = function(callback)
+            local packName = "Toy"
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+
+            if callback then
+                -- Save Animate script for restoration
+                if character:FindFirstChild("Animate") then
+                    ToyAnimation.DefaultAnimate = character.Animate:Clone()
+                end
+
+                -- Set pack and run script
+                getgenv().pack = packName
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Mautiku/Mautiku/refs/heads/main/AnimationCHANGER.txt", true))()
+            else
+                -- Restore Animate script if previously saved
+                if ToyAnimation.DefaultAnimate then
+                    local old = character:FindFirstChild("Animate")
+                    if old then old:Destroy() end
+
+                    local restore = ToyAnimation.DefaultAnimate:Clone()
+                    restore.Parent = character
+                    restore.Disabled = false
+                end
+            end
+        end,
+        Tooltip = "Toggles Toy animation pack"
+    })
+end)
+																	
+run(function()
+    MageAnimation = vape.Categories.Blatant:CreateModule({
+        Name = 'MageAnimation',
+        Function = function(callback)
+            local packName = "Mage"
+            local defaultAnimateScript
+
+            if callback then
+                -- Save current Animate script for restoration
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local animate = character:FindFirstChild("Animate")
+
+                if animate then
+                    defaultAnimateScript = animate:Clone()
+                end
+
+                -- Set animation pack (make sure case is correct)
+                getgenv().pack = packName
+
+                -- Load animation changer script
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Mautiku/Mautiku/refs/heads/main/AnimationCHANGER.txt", true))()
+            else
+                -- Restore default animation
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+
+                if character and defaultAnimateScript then
+                    local existingAnimate = character:FindFirstChild("Animate")
+                    if existingAnimate then
+                        existingAnimate:Destroy()
+                    end
+
+                    defaultAnimateScript.Parent = character
+                    defaultAnimateScript.Disabled = false
+                end
+            end
+        end,
+        Tooltip = "Mage Animation Toggle"
+    })
+end)
+
+run(function()
+    UltraFPSBoost = vape.Categories.Utility:CreateModule({
+        Name = 'UltraFPSBoost',
+        Function = function(callback)
+            local g = game
+            local w = g.Workspace
+            local l = g.Lighting
+            local t = w.Terrain
+            local players = g:GetService("Players")
+
+            if callback then
+                -- Apply FPS boost settings
+                t.WaterWaveSize = 0
+                t.WaterWaveSpeed = 0
+                t.WaterReflectance = 0
+                t.WaterTransparency = 0
+                l.GlobalShadows = false
+                l.FogEnd = 1e10
+                l.Brightness = 0
+
+                pcall(function()
+                    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+                end)
+
+                local function isInAccessory(instance)
+                    return instance:FindFirstAncestorWhichIsA("Accessory") ~= nil
+                end
+
+                for _, v in ipairs(g:GetDescendants()) do
+                    if not isInAccessory(v) then
+                        if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+                            v.Material = Enum.Material.Plastic
+                            v.Reflectance = 0
+                        elseif v:IsA("MeshPart") then
+                            v.Material = Enum.Material.Plastic
+                            v.Reflectance = 0
+                            v.TextureID = ""
+                        elseif v:IsA("Decal") or v:IsA("Texture") then
+                            v.Transparency = 1
+                        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                            v.Lifetime = NumberRange.new(0)
+                        elseif v:IsA("Explosion") then
+                            v.BlastPressure = 1
+                            v.BlastRadius = 1
+                        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+                            v.Enabled = false
+                        end
+                    end
+                end
+
+                for _, e in ipairs(l:GetChildren()) do
+                    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or 
+                       e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+                        e.Enabled = false
+                    end
+                end
+            else
+                -- Restore basic lighting and terrain settings
+                t.WaterWaveSize = 0.1
+                t.WaterWaveSpeed = 1
+                t.WaterReflectance = 1
+                t.WaterTransparency = 0.5
+                l.GlobalShadows = true
+                l.FogEnd = 1000
+                l.Brightness = 2
+
+                -- Re-enable post-processing
+                for _, e in ipairs(l:GetChildren()) do
+                    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or 
+                       e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+                        e.Enabled = true
+                    end
+                end
+            end
+        end,
+        Tooltip = "Toggle ultra FPS boost on or off"
+    })
+end)
+
+run(function()
+    PartyPopperExploit = vape.Categories.Utility:CreateModule({
+        Name = 'PartyPopperExploit',
+        Function = function(callback)
+            if callback then
+                task.spawn(function()
+                    while PartyPopperExploit.Enabled do
+                        bedwars.AbilityController:useAbility("PARTY_POPPER")
+                        task.wait()
+                    end
+                end)
+            end
+        end,
+        Tooltip = "Party1!1!1!1!1!"
+    })
+end)
+
+run(function()
+    local playersService = game:GetService("Players")
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    local tweenService = game:GetService("TweenService")
+    local workspace = game:GetService("Workspace")
+
+    local activeTweens = {}
+    local activeAnimationTrack = nil
+    local activeModel = nil
+    local emoteActive = false
+
+    NightmareEmote = vape.Categories.Utility:CreateModule({
+        Name = 'Nightmare Emote',
+        Function = function(callback)
+            if callback then
+                local function spinParts(model)
+                    for _, part in ipairs(model:GetDescendants()) do
+                        if part:IsA("BasePart") and (part.Name == "Middle" or part.Name == "Outer") then
+                            local tweenInfo, goal
+                            if part.Name == "Middle" then
+                                tweenInfo = TweenInfo.new(12.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, false, 0)
+                                goal = { Orientation = part.Orientation + Vector3.new(0, -360, 0) }
+                            elseif part.Name == "Outer" then
+                                tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, false, 0)
+                                goal = { Orientation = part.Orientation + Vector3.new(0, 360, 0) }
+                            end
+
+                            local tween = tweenService:Create(part, tweenInfo, goal)
+                            tween:Play()
+                            table.insert(activeTweens, tween)
+                        end
+                    end
+                end
+
+                local function placeModelUnderLeg()
+                    local player = playersService.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+                    if humanoidRootPart then
+                        local assetsFolder = replicatedStorage:FindFirstChild("Assets")
+                        if assetsFolder then
+                            local effectsFolder = assetsFolder:FindFirstChild("Effects")
+                            if effectsFolder then
+                                local modelTemplate = effectsFolder:FindFirstChild("NightmareEmote")
+                                if modelTemplate and modelTemplate:IsA("Model") then
+                                    local clonedModel = modelTemplate:Clone()
+                                    clonedModel.Parent = workspace
+
+                                    if clonedModel.PrimaryPart then
+                                        clonedModel:SetPrimaryPartCFrame(humanoidRootPart.CFrame - Vector3.new(0, 3, 0))
+                                    else
+                                        warn("PrimaryPart not set for NightmareEmote model!")
+                                        return
+                                    end
+
+                                    spinParts(clonedModel)
+                                    activeModel = clonedModel
+                                else
+                                    warn("NightmareEmote model not found or is not a valid model!")
+                                end
+                            else
+                                warn("Effects folder not found in Assets!")
+                            end
+                        else
+                            warn("Assets folder not found in ReplicatedStorage!")
+                        end
+                    else
+                        warn("HumanoidRootPart not found in character!")
+                    end
+                end
+
+                local function playAnimation(animationId)
+                    local player = playersService.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local humanoid = character:FindFirstChild("Humanoid")
+
+                    if humanoid then
+                        local animator = humanoid:FindFirstChild("Animator") or Instance.new("Animator", humanoid)
+                        local animation = Instance.new("Animation")
+                        animation.AnimationId = animationId
+                        activeAnimationTrack = animator:LoadAnimation(animation)
+                        activeAnimationTrack:Play()
+                    else
+                        warn("Humanoid not found in character!")
+                    end
+                end
+
+                local function stopEffects()
+                    for _, tween in ipairs(activeTweens) do
+                        tween:Cancel()
+                    end
+                    activeTweens = {}
+
+                    if activeAnimationTrack then
+                        activeAnimationTrack:Stop()
+                        activeAnimationTrack = nil
+                    end
+
+                    if activeModel then
+                        activeModel:Destroy()
+                        activeModel = nil
+                    end
+
+                    emoteActive = false
+                end
+
+                local function monitorWalking()
+                    local player = playersService.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local humanoid = character:FindFirstChild("Humanoid")
+
+                    if humanoid then
+                        humanoid.Running:Connect(function(speed)
+                            if speed > 0 and emoteActive then
+                                stopEffects()
+                            end
+                        end)
+                    else
+                        warn("Humanoid not found in character!")
+                    end
+                end
+
+                local function activateNightmareEmote()
+                    if emoteActive then return end
+                    emoteActive = true
+
+                    local success, err = pcall(function()
+                        monitorWalking()
+                        placeModelUnderLeg()
+                        playAnimation("rbxassetid://9191822700")
+                    end)
+
+                    if not success then
+                        warn("Error occurred: " .. tostring(err))
+                        emoteActive = false
+                    end
+                end
+
+                activateNightmareEmote()
+            else
+                -- When toggled off
+                if emoteActive then
+                    stopEffects()
+                end
+            end
+        end,
+        Tooltip = "Free Nightmare emote!1!1!1!1"
+    })
+end)
+
+run(function()
+    local runService = game:GetService("RunService")
+    local players = game:GetService("Players")
+    local lplr = players.LocalPlayer
+
+    local NoNameTag = vape.Categories.Utility:CreateModule({
+        Name = 'NoNameTag',
+        Function = function(callback)
+            if callback then
+                NoNameTag:Clean(runService.RenderStepped:Connect(function()
+                    pcall(function()
+                        if lplr.Character and lplr.Character:FindFirstChild("Head") and lplr.Character.Head:FindFirstChild("Nametag") then
+                            lplr.Character.Head.Nametag:Destroy()
+                        end
+                    end)
+                end))
+            end
+        end,
+        Tooltip = "Client Sided",
+        Default = false
+    })
+end)
+																						
+run(function()
 	local FastBreak
 	local Time
 	
@@ -1795,7 +2243,192 @@ run(function()
 		Suffix = 'seconds'
 	})
 end)
+
+run(function()
+	local antihit = nil :: table
+	local antihitrange = nil :: table
+	local antihitairtime = nil :: table
+	local antihitsettings = nil :: table
+	local antihitgroundtime = nil :: table
+	local antihitautoair = nil :: table
+
+	local oldroot
+	local clone
+
+	local function createClone()
+		if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 and (not oldroot or not oldroot.Parent) then
+			hip = entitylib.character.Humanoid.HipHeight
+			oldroot = entitylib.character.HumanoidRootPart
+			if not lplr.Character.Parent then return false end
+			lplr.Character.Parent = game
+			clone = oldroot:Clone()
+			clone.Parent = lplr.Character
+			oldroot.Parent = gameCamera
+			bedwars.QueryUtil:setQueryIgnored(oldroot, true)
+			lplr.Character.PrimaryPart = clone
+			lplr.Character.Parent = workspace
+			for _, v in lplr.Character:GetDescendants() do
+				if v:IsA('Weld') or v:IsA('Motor6D') then
+					if v.Part0 == oldroot then v.Part0 = clone end
+					if v.Part1 == oldroot then v.Part1 = clone end
+				end
+			end
+			return true
+		end
+		return false
+	end
 	
+	local function destroyClone()
+		if not oldroot or not oldroot.Parent or not entitylib.isAlive then return false end
+		lplr.Character.Parent = game
+		oldroot.Parent = lplr.Character
+		lplr.Character.PrimaryPart = oldroot
+		lplr.Character.Parent = workspace
+		oldroot.CanCollide = true
+		for _, v in lplr.Character:GetDescendants() do
+			if v:IsA('Weld') or v:IsA('Motor6D') then
+				if v.Part0 == clone then v.Part0 = oldroot end
+				if v.Part1 == clone then v.Part1 = oldroot end
+			end
+		end
+		local oldcf = clone.CFrame
+		if clone then
+			clone:Destroy()
+			clone = nil
+		end
+		oldroot.Transparency = 1
+		oldroot = nil
+		entitylib.character.RootPart.CFrame = oldcf + Vector3.new(0, 12, 0)
+		task.spawn(function()
+			for i = 1, 12 do
+				entitylib.character.RootPart.Velocity = Vector3.zero
+				task.wait()
+			end
+		end)
+		entitylib.character.Humanoid.HipHeight = 2
+	end
+
+	local rayCheck = RaycastParams.new()
+
+	local getY = function()
+		if oldroot and oldroot.Parent then
+			local lasty = -60
+			if not workspace:Raycast(oldroot.Position - Vector3.new(0, lasty, 0), Vector3.new(0, 5, 0), rayCheck) then
+				return lasty
+			end
+			for i = 1, 12 do
+				lasty -= 10
+				if not workspace:Raycast(oldroot.Position - Vector3.new(0, lasty, 0), Vector3.new(0, 5, 0), rayCheck) and not workspace:Raycast(oldroot.Position - Vector3.new(0, lasty, 0), Vector3.new(0, -5, 0), rayCheck) then
+					return lasty
+				end
+			end
+		end
+		return -100
+	end
+
+	local tpbackup = false
+
+	local lastantihitting = nil
+
+	local projectileHitting = false
+
+	antihit = vape.Categories.Blatant:CreateModule({
+		Name = 'Anti Hit',
+		Function = function(callback)
+			if callback then
+				antihit:Clean(runService.PreSimulation:Connect(function()
+					if entitylib.isAlive and not flylanding then
+						local cf = clone and clone.Parent and {clone.CFrame:GetComponents()} or {entitylib.character.HumanoidRootPart.CFrame:GetComponents()}
+						if store.KillauraTarget and not antihitting then
+							cf[2] = store.KillauraTarget.Character.PrimaryPart.CFrame.Y
+						end
+						if oldroot and oldroot.Parent then
+							oldroot.CFrame = antihitting and (tick() - entitylib.character.AirTime) < 2 and CFrame.new(clone.CFrame.X, oldroot.CFrame.Y, clone.CFrame.Z) or CFrame.new(unpack(cf)) + Vector3.new(0, 6, 0)
+							if not antihitting and lastantihitting then
+								lastantihitting = antihitting
+								for i = 1, 4 do
+									oldroot.Velocity = Vector3.zero
+									task.wait()
+								end
+							else
+								lastantihitting = antihitting
+							end
+						end
+					end
+				end))
+				repeat
+				  	if store.matchState == 0 or not entitylib.isAlive or flylanding then task.wait() continue end
+					rayCheck.FilterDescendantsInstances = {lplr.Character, store.antifallpart}
+					local plr = entitylib.AllPosition({
+						Range = antihitrange.Value,
+						Part = 'RootPart',
+						Players = antihitsettings.Players.Enabled,
+						NPCs = antihitsettings.NPCs.Enabled,
+						Limit = 1
+					})[1]
+					if entitylib.character.AirTime and plr and (tick() - entitylib.character.AirTime) < 2 or projectileHitting then
+						createClone()
+						if tpbackup then
+							tpbackup = false
+						else
+							tpbackup = true
+						end
+						antihitting = not tpbackup
+						projectileHitting = false
+						if not tpbackup then
+							oldroot.CFrame += Vector3.new(0, getY(), 0)
+						end
+					else
+						antihitting = false
+						destroyClone()
+					end
+					local delayv = antihitautoair.Enabled and (tpbackup and store.attackSpeed and 0.14) or (tpbackup and antihitairtime.Value or antihitgroundtime.Value) 
+					task.wait(delayv)
+				until not antihit.Enabled
+			else
+				destroyClone()
+				tpbackup = false
+			end
+		end
+	})
+	antihitsettings = antihit:CreateTargets({
+		Players = true, 
+		NPCs = false
+	})
+	antihitautoair = antihit:CreateToggle({
+		Name = 'Auto Predict',
+		Default = true,
+		Function = function(call)
+			if antihitairtime then
+				antihitairtime.Object.Visible = not call
+				antihitgroundtime.Object.Visible = not call
+			end
+		end
+	})
+	antihitrange = antihit:CreateSlider({
+		Name = 'Range',
+		Min = 1,
+		Max = 40,
+		Default = 25
+	})
+	antihitgroundtime = antihit:CreateSlider({
+		Name = 'Ground Time',
+		Decimal = 15,
+		Min = 0,
+		Max = 2,
+		Default = 0.14
+	})
+	antihitairtime = antihit:CreateSlider({
+		Name = 'Air Time',
+		Decimal = 15,
+		Min = 0,
+		Max = 2,
+		Default = 0.2
+	})
+	antihitgroundtime.Object.Visible = false
+	antihitairtime.Object.Visible = false
+end)
+																		
 local Fly
 local LongJump
 run(function()
@@ -1944,7 +2577,76 @@ run(function()
 		Default = true
 	})
 end)
-	
+
+run(function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local animationId = "rbxassetid://4940563117"
+    local activeTracks = {}
+    local respawnConnection
+
+    SetEmote = vape.Categories.Blatant:CreateModule({
+        Name = 'SetEmote',
+        Function = function(callback)
+            local function applyLoopingAnimation(character)
+                local humanoid = character:WaitForChild("Humanoid")
+                local animation = Instance.new("Animation")
+                animation.AnimationId = animationId
+                local mainAnim = humanoid:LoadAnimation(animation)
+
+                mainAnim.Priority = Enum.AnimationPriority.Action4
+                mainAnim.Looped = true
+                mainAnim:Play()
+                table.insert(activeTracks, mainAnim)
+
+                -- Watchdog to keep animation active
+                task.spawn(function()
+                    while SetEmote.Enabled and character and character.Parent do
+                        for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                            if track.Animation.AnimationId ~= animationId then
+                                track:Stop()
+                            elseif not track.Looped then
+                                track.Looped = true
+                            end
+                        end
+                        if not mainAnim.IsPlaying then
+                            mainAnim:Play()
+                        end
+                        task.wait(0.05)
+                    end
+                end)
+            end
+
+            if callback then
+                -- Apply to current character
+                if LocalPlayer.Character then
+                    applyLoopingAnimation(LocalPlayer.Character)
+                end
+
+                -- Reapply on respawn
+                respawnConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+                    applyLoopingAnimation(char)
+                end)
+            else
+                -- Stop all active animation tracks
+                for _, track in ipairs(activeTracks) do
+                    if track and track.IsPlaying then
+                        track:Stop()
+                    end
+                end
+                activeTracks = {}
+
+                -- Disconnect respawn handler
+                if respawnConnection then
+                    respawnConnection:Disconnect()
+                    respawnConnection = nil
+                end
+            end
+        end,
+        Tooltip = 'Looped emote animation'
+    })
+end)
+																						
 run(function()
 	local Mode
 	local Expand
@@ -3940,7 +4642,50 @@ run(function()
 		Darker = true
 	})
 end)
-	
+
+run(function()
+    Night = vape.Categories.Blatant:CreateModule({
+        Name = 'Night',
+        Function = function(callback)
+            local Lighting = game:GetService("Lighting")
+
+            if callback then
+                -- Remove all Clouds
+                for _, obj in ipairs(Lighting:GetChildren()) do
+                    if obj:IsA("Clouds") then
+                        obj:Destroy()
+                    end
+                end
+
+                -- Set ClockTime to 20 (8 PM)
+                Lighting.ClockTime = 20
+
+                -- Set default Roblox skybox
+                local defaultSky = Instance.new("Sky")
+                defaultSky.Name = "DefaultSky"
+                defaultSky.SkyboxBk = "rbxassetid://7018684000"
+                defaultSky.SkyboxDn = "rbxassetid://7018687832"
+                defaultSky.SkyboxFt = "rbxassetid://7018685215"
+                defaultSky.SkyboxLf = "rbxassetid://7018684379"
+                defaultSky.SkyboxRt = "rbxassetid://7018686132"
+                defaultSky.SkyboxUp = "rbxassetid://7018689553"
+                defaultSky.Parent = Lighting
+            else
+                -- Reset ClockTime to default (assume 14 = 2 PM)
+                Lighting.ClockTime = 14
+
+                -- Remove inserted skyboxes named "DefaultSky"
+                for _, obj in ipairs(Lighting:GetChildren()) do
+                    if obj:IsA("Sky") and obj.Name == "DefaultSky" then
+                        obj:Destroy()
+                    end
+                end
+            end
+        end,
+        Tooltip = "Night time"
+    })
+end)
+																																																																	
 run(function()
 	local AutoBalloon
 	
