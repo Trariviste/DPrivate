@@ -2043,6 +2043,136 @@ run(function()
 end)
 
 run(function()
+    local disguiseConnection
+    local uiConnections = {}
+    local characterConnection
+    local originalTexts = {}
+    local originalAppearanceId, originalDisplayName
+
+    StreamerMode = vape.Categories.Utility:CreateModule({
+        Name = 'StreamerMode',
+        Function = function(callback)
+            local lp = game:GetService("Players").LocalPlayer
+            local players = game:GetService('Players')
+
+            if callback then
+                if not getgenv().Config then
+                    getgenv().Config = {
+                        Headless = false,
+                        FakeDisplayName = "Chase",
+                        FakeName = "Chasemaser",
+                        FakeId = 22808138,
+                    }
+                end
+
+                local Config = getgenv().Config
+                local oldUserId = tostring(lp.UserId)
+                local oldName = lp.Name
+                originalDisplayName = lp.DisplayName
+                originalAppearanceId = lp.CharacterAppearanceId
+
+                local function processtext(text)
+                    if typeof(text) ~= "string" then return text end
+                    text = text:gsub(oldName, Config.FakeName)
+                    text = text:gsub(oldUserId, tostring(Config.FakeId))
+                    text = text:gsub(originalDisplayName, Config.FakeDisplayName)
+                    return text
+                end
+
+                -- Disguise UI
+                for _, v in ipairs(game:GetDescendants()) do
+                    if v:IsA("TextBox") or v:IsA("TextLabel") or v:IsA("TextButton") then
+                        originalTexts[v] = {Text = v.Text, Name = v.Name}
+                        v.Text = processtext(v.Text)
+                        v.Name = processtext(v.Name)
+                        table.insert(uiConnections, v.Changed:Connect(function()
+                            v.Text = processtext(v.Text)
+                            v.Name = processtext(v.Name)
+                        end))
+                    end
+                end
+
+                disguiseConnection = game.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("TextBox") or descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+                        descendant.Text = processtext(descendant.Text)
+                        descendant.Name = processtext(descendant.Name)
+                        table.insert(uiConnections, descendant.Changed:Connect(function()
+                            descendant.Text = processtext(descendant.Text)
+                            descendant.Name = processtext(descendant.Name)
+                        end))
+                    end
+                end)
+
+                -- Apply fake info
+                lp.DisplayName = Config.FakeDisplayName
+                lp.CharacterAppearanceId = Config.FakeId
+
+                -- Headless effect
+                if Config.Headless then
+                    task.spawn(function()
+                        while StreamerMode.Enabled and task.wait(0.5) do
+                            local char = lp.Character
+                            if char and char:FindFirstChild("Head") then
+                                char.Head.Transparency = 1
+                                local decal = char.Head:FindFirstChildOfClass("Decal")
+                                if decal then decal:Destroy() end
+                            end
+                        end
+                    end)
+                end
+
+                -- Disguise character
+                local function disguisechar(char, id)
+                    task.spawn(function()
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        if not hum then return end
+
+                        local desc
+                        repeat
+                            pcall(function()
+                                desc = players:GetHumanoidDescriptionFromUserId(id)
+                            end)
+                            task.wait()
+                        until desc
+
+                        desc.HeightScale = hum:WaitForChild("HumanoidDescription").HeightScale
+                        char.Humanoid:ApplyDescriptionClientServer(desc)
+                    end)
+                end
+
+                disguisechar(lp.Character, Config.FakeId)
+                characterConnection = lp.CharacterAdded:Connect(function(char)
+                    disguisechar(char, Config.FakeId)
+                end)
+            else
+                -- Cleanup: revert everything
+                if characterConnection then characterConnection:Disconnect() end
+                if disguiseConnection then disguiseConnection:Disconnect() end
+                for _, conn in pairs(uiConnections) do
+                    conn:Disconnect()
+                end
+
+                -- Restore original UI text
+                for obj, data in pairs(originalTexts) do
+                    if obj and obj.Parent then
+                        obj.Text = data.Text
+                        obj.Name = data.Name
+                    end
+                end
+
+                -- Restore original player info
+                if lp then
+                    lp.DisplayName = originalDisplayName or lp.Name
+                    lp.CharacterAppearanceId = originalAppearanceId or lp.UserId
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = "Client Sided"
+    })
+end)
+																					
+run(function()
     local playersService = game:GetService("Players")
     local replicatedStorage = game:GetService("ReplicatedStorage")
     local tweenService = game:GetService("TweenService")
