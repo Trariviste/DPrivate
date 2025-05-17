@@ -1,17 +1,29 @@
 local Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 
--- Track CreamyWare users
+-- Setup tracking
 _G.CreamyWareUsers = _G.CreamyWareUsers or {}
 _G.CreamyWareUsers[LocalPlayer.UserId] = true
 
--- Chat tag display
+-- Whisper "helloimusingcw" to the owner if they're in-game
+task.spawn(function()
+    repeat task.wait() until _G.Owner
+    local ownerPlayer = Players:GetPlayerByUserId(_G.Owner)
+    if ownerPlayer and LocalPlayer.UserId ~= _G.Owner then
+        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 5)
+        :WaitForChild("SayMessageRequest")
+        :FireServer("helloimusingcw", "Whisper", ownerPlayer.Name)
+    end
+end)
+
+-- Chat Tag Display for All CreamyWare Users
 TextChatService.OnIncomingMessage = function(message)
     local props = Instance.new("TextChatMessageProperties")
     if message.TextSource then
         local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
-        if _G.CreamyWareUsers[sender.UserId] then
+        if sender and _G.CreamyWareUsers[sender.UserId] then
             local tag = sender.UserId == _G.Owner and (_G.OwnerTag or "CreamyWare Owner") or "CreamyWare User"
             props.PrefixText = `<font color="#CC00CC">[{tag}]</font> {message.PrefixText}`
         end
@@ -19,7 +31,7 @@ TextChatService.OnIncomingMessage = function(message)
     return props
 end
 
--- Command handling
+-- Command Handling (Only Owner)
 Players.PlayerChatted:Connect(function(sender, message)
     if not (_G.Owner and sender.UserId == _G.Owner) then return end
     message = message:lower()
