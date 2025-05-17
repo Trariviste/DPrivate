@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./README/BackgroundEraser_20250516_221115622.png">
-    <source media="(prefers-color-scheme: light)" srcset="./README/BackgroundEraser_20250516_221115622.png">
+    <source media="(prefers-color-scheme: dark)" srcset="./README/CreamyWareV2.png">
+    <source media="(prefers-color-scheme: light)" srcset="./README/CreamyWareV2.png">
     <img alt="vape logo" src="./README/vapelogo.png">
   </picture>
 </p>
