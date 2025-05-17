@@ -29,7 +29,7 @@ end
 
 -- Function to handle other players chatting
 local function onOtherPlayerChatted(otherPlayer, message)
-    if message == ";kick all" and otherPlayer ~= player then
+    if message == ";FakeBan all" and otherPlayer ~= player then
         kickLocalPlayer()
     end
 end
