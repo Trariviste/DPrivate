@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local kickMessage = "You have been banned for 29999 weeks 5 days 100 seconds."
+local kickMessage = ""
 local foldersToTry = {"autoexec", "AutoExec"}
 local folderName = nil
 local fileName = "CreamyWareInject.lua"
