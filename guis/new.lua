@@ -85,8 +85,8 @@ local getcustomassets = {
 	['newvape/assets/new/guisettings.png'] = 'rbxassetid://14368318994',
 	['newvape/assets/new/guislider.png'] = 'rbxassetid://14368320020',
 	['newvape/assets/new/guisliderrain.png'] = 'rbxassetid://14368321228',
-	['newvape/assets/new/guiv4.png'] = 'rbxassetid://14368322199',
-	['newvape/assets/new/Failed.png'] = 'rbxassetid://14657521312',
+	['newvape/assets/new/.png'] = 'rbxassetid://14368322199',
+	['newvape/assets/new/CreamyWareV2.png'] = 'rbxassetid://14657521312',
 	['newvape/assets/new/info.png'] = 'rbxassetid://14368324807',
 	['newvape/assets/new/inventoryicon.png'] = 'rbxassetid://14928011633',
 	['newvape/assets/new/legit.png'] = 'rbxassetid://14425650534',
@@ -115,10 +115,10 @@ local getcustomassets = {
 	['newvape/assets/new/targetplayers2.png'] = 'rbxassetid://14497397862',
 	['newvape/assets/new/targetstab.png'] = 'rbxassetid://14497393895',
 	['newvape/assets/new/textguiicon.png'] = 'rbxassetid://14368355456',
-	['newvape/assets/new/textv4.png'] = 'rbxassetid://14368357095',
-	['newvape/assets/new/Failed.png'] = 'rbxassetid://14368358200',
+	['newvape/assets/new/.png'] = 'rbxassetid://14368357095',
+	['newvape/assets/new/CreamyWareV2.png'] = 'rbxassetid://14368358200',
 	['newvape/assets/new/utilityicon.png'] = 'rbxassetid://14368359107',
-	['newvape/assets/new/vape.png'] = 'rbxassetid://14373395239',
+	['newvape/assets/new/CreamyWare.png'] = 'rbxassetid://14373395239',
 	['newvape/assets/new/warning.png'] = 'rbxassetid://14368361552',
 	['newvape/assets/new/worldicon.png'] = 'rbxassetid://14368362492'
 }
@@ -313,7 +313,7 @@ local function downloadFile(path, func)
 	if not isfile(path) then
 		createDownloader(path)
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/CreamyWare/CreamyWare/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
