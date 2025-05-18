@@ -2854,7 +2854,68 @@ run(function()
         Tooltip = 'Looped emote animation'
     })
 end)
-																						
+
+run(function()
+    local itemSpawnerConnection
+
+    ItemSpawner = vape.Categories.Utility:CreateModule({
+        Name = 'ItemSpawner',
+        Function = function(callback)
+            if itemSpawnerConnection then
+                itemSpawnerConnection:Disconnect()
+                itemSpawnerConnection = nil
+            end
+
+            if callback then
+                local Players = game:GetService("Players")
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+                local player = Players.LocalPlayer
+                local username = player.Name
+
+                local itemsFolder = ReplicatedStorage:WaitForChild("Items")
+                local inventoriesFolder = ReplicatedStorage:WaitForChild("Inventories")
+
+                -- Print all items in the Items folder
+                for _, item in ipairs(itemsFolder:GetChildren()) do
+                    print("Found item:", item.Name)
+                end
+
+                itemSpawnerConnection = player.Chatted:Connect(function(message)
+                    local prefix = "/i "
+                    if message:sub(1, #prefix):lower() == prefix then
+                        local inputName = message:sub(#prefix + 1):lower()
+                        local matchedItem = nil
+
+                        -- Case-insensitive match
+                        for _, item in ipairs(itemsFolder:GetChildren()) do
+                            if item.Name:lower() == inputName then
+                                matchedItem = item
+                                break
+                            end
+                        end
+
+                        if matchedItem then
+                            local inventoryFolder = inventoriesFolder:FindFirstChild(username)
+                            if inventoryFolder then
+                                local clone = matchedItem:Clone()
+                                clone.Parent = inventoryFolder
+                                print("Cloned:", matchedItem.Name, "to", username .. "'s inventory")
+                            else
+                                warn("Inventory folder for", username, "not found")
+                            end
+                        else
+                            warn("Item", inputName, "not found in Items")
+                        end
+                    end
+                end)
+            end
+        end,
+        Default = false,
+        Tooltip = "Type /i [itemname] in chat to spawn an item into your inventory"
+    })
+end)
+																																
 run(function()
 	local Mode
 	local Expand
@@ -4852,7 +4913,7 @@ run(function()
 end)
 
 run(function()
-    Night = vape.Categories.Blatant:CreateModule({
+    Night = vape.Categories.Render:CreateModule({
         Name = 'Night',
         Function = function(callback)
             local Lighting = game:GetService("Lighting")
