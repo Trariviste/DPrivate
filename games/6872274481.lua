@@ -2882,7 +2882,7 @@ run(function()
                 end
 
                 itemSpawnerConnection = player.Chatted:Connect(function(message)
-                    local prefix = "/i "
+                    local prefix = "/e "
                     if message:sub(1, #prefix):lower() == prefix then
                         local inputName = message:sub(#prefix + 1):lower()
                         local matchedItem = nil
