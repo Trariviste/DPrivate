@@ -2912,7 +2912,7 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Type /i [itemname] in chat to spawn an item into your inventory"
+        Tooltip = "Client Sided"
     })
 end)
 																																
