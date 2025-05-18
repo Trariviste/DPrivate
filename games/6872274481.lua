@@ -1811,7 +1811,39 @@ run(function()
         Tooltip = 'Bedwars has the worst AC LOL'
     })
 end)
-															
+
+run(function()
+    AnticheatBFly = vape.Categories.Utility:CreateModule({
+        Name = 'AnticheatBFly',
+        Function = function(callback)
+            if callback then
+                workspace.Gravity = 0
+                AnticheatBFly:Clean(coroutine.wrap(function()
+                    while AnticheatBFly.Enabled do
+                        local humanoid = game:GetService("Players").LocalPlayer.Character and game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid then
+                            humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Climbing)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+                            task.wait(0.000001)
+                        end
+                    end
+                end)())
+            else
+                workspace.Gravity = 196.2
+            end
+        end,
+        Default = false,
+        Tooltip = "Skidded from Vape Private"
+    })
+end)
+																
 run(function()
     local inputService = game:GetService("UserInputService")
     local runService = game:GetService("RunService")
