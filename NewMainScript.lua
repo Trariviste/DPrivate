@@ -1,46 +1,4 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local player = Players.LocalPlayer
-local username = player.Name
-
-local itemsFolder = ReplicatedStorage:WaitForChild("Items")
-local inventoriesFolder = ReplicatedStorage:WaitForChild("Inventories")
-
--- Print all items in the Items folder
-for _, item in ipairs(itemsFolder:GetChildren()) do
-    print("Found item:", item.Name)
-end
-
--- Listen for /e [itemname] typed in chat
-player.Chatted:Connect(function(message)
-    local prefix = "/i "
-    if message:sub(1, #prefix):lower() == prefix then
-        local inputName = message:sub(#prefix + 1):lower()
-        local matchedItem = nil
-
-        -- Case-insensitive match
-        for _, item in ipairs(itemsFolder:GetChildren()) do
-            if item.Name:lower() == inputName then
-                matchedItem = item
-                break
-            end
-        end
-
-        if matchedItem then
-            local inventoryFolder = inventoriesFolder:FindFirstChild(username)
-            if inventoryFolder then
-                local clone = matchedItem:Clone()
-                clone.Parent = inventoryFolder
-                print("Cloned:", matchedItem.Name, "to", username .. "'s inventory")
-            else
-                warn("Inventory folder for", username, "not found")
-            end
-        else
-            warn("Item", inputName, "not found in Items")
-        end
-    end
-end)
 local isfile = isfile or function(file)
 	local suc, res = pcall(function()
 		return readfile(file)
