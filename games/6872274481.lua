@@ -1,4 +1,4 @@
-pplocal run = function(func)
+local run = function(func)
 	func()
 end
 local cloneref = cloneref or function(obj)
