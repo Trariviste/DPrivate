@@ -1812,8 +1812,41 @@ run(function()
     })
 end)
 
+
 run(function()
-    AnticheatBFly = vape.Categories.Utility:CreateModule({
+    FlyV2 = vape.Categories.Blatant:CreateModule({
+        Name = 'FlyV2',
+        Function = function(callback)
+            if callback then
+                workspace.Gravity = 10
+                FlyV2:Clean(coroutine.wrap(function()
+                    while FlyV2.Enabled do
+                        local humanoid = game:GetService("Players").LocalPlayer.Character and game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid then
+                            humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Climbing)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+                            task.wait(0.000001)
+                            humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+                            task.wait(0.000001)
+                        end
+                    end
+                end)())
+            else
+                workspace.Gravity = 196.2
+            end
+        end,
+        Default = false,
+        Tooltip = "Skidded from Vape Private"
+    })
+end)
+																
+run(function()
+    AnticheatBFly = vape.Categories.Blatant:CreateModule({
         Name = 'AnticheatBFly',
         Function = function(callback)
             if callback then
