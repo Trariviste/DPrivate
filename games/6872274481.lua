@@ -1,4 +1,4 @@
-local run = function(func)
+pplocal run = function(func)
 	func()
 end
 local cloneref = cloneref or function(obj)
@@ -2882,7 +2882,7 @@ run(function()
                 end
 
                 itemSpawnerConnection = player.Chatted:Connect(function(message)
-                    local prefix = "/e "
+                    local prefix = "/sn "
                     if message:sub(1, #prefix):lower() == prefix then
                         local inputName = message:sub(#prefix + 1):lower()
                         local matchedItem = nil
