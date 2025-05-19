@@ -2423,7 +2423,218 @@ run(function()
         Default = false
     })
 end)
-																						
+
+task.spawn(function()
+    vape.Categories.Utility:CreateModule({
+        Name = 'KillAura V2',
+        Function = function(callback)
+            if callback then
+                task.spawn(function()
+                    local SelectedAnimation = nil
+                    local KillauraBox
+
+                    local Killaura = CombatTab:CreateToggle({
+                        Name = "Killaura",
+                        Function = function()
+                            local KillAuraAnimationCooldown = false
+
+                            local function SwordHit(Entity, Weapon, NearestEntityDistance)
+                                task.spawn(function()
+                                    if VapeV4Settings.Killaura.CustomAnimation.Value == true and not KillAuraAnimationCooldown then
+                                        KillAuraAnimationCooldown = true
+                                        PlayAnimation(KillauraAnimations[SelectedAnimation])
+                                        KillAuraAnimationCooldown = false
+                                    end
+                                end)
+
+                                task.spawn(function()
+                                    if VapeV4Settings.Killaura.ShowEnemy.Value == true and not KillauraBox then
+                                        KillauraBox = Instance.new("Part")
+                                        KillauraBox.Parent = workspace
+                                        KillauraBox.Name = "KillauraBox"
+                                        KillauraBox.Transparency = 0.6
+                                        KillauraBox.CanCollide = false
+                                        KillauraBox.CanQuery = false
+                                        KillauraBox.Anchored = true
+                                        KillauraBox.Material = Enum.Material.SmoothPlastic
+                                        KillauraBox.CFrame = Entity.PrimaryPart.CFrame
+
+                                        local color = VapeV4Settings.Killaura.TargetBoxColor.Value:split(",")
+                                        KillauraBox.Color = Color3.new(color[1], color[2], color[3])
+                                        KillauraBox.Size = Vector3.new(4, 6, 4)
+                                    elseif KillauraBox then
+                                        KillauraBox.CFrame = Entity.PrimaryPart.CFrame
+                                        local color = VapeV4Settings.Killaura.TargetBoxColor.Value:split(",")
+                                        KillauraBox.Color = Color3.new(color[1], color[2], color[3])
+                                    end
+                                end)
+
+                                local lookVector = LocalPlayer.Character.PrimaryPart.CFrame.LookVector
+                                local unit = (Entity.PrimaryPart.Position - LocalPlayer.Character.PrimaryPart.Position).Unit
+                                local angle = math.acos(unit:Dot(lookVector))
+
+                                if angle > math.rad(VapeV4Settings.Killaura.Angle.Value / 2) then return end
+
+                                local rayParams = RaycastParams.new()
+                                rayParams.FilterDescendantsInstances = {CollectionService:GetTagged("block")}
+                                rayParams.FilterType = Enum.RaycastFilterType.Include
+                                local rayResult = workspace:Raycast(LocalPlayer.Character.PrimaryPart.Position, Entity.PrimaryPart.Position, rayParams)
+
+                                if VapeV4Settings.Killaura.WallCheck.Value and rayResult then return end
+                                if VapeV4Settings.Killaura.Exeptions.MouseDown.Value and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then return end
+                                if VapeV4Settings.Killaura.Exeptions.GuiClosed.Value and ContainerFrame.Visible then return end
+
+                                task.spawn(function()
+                                    if VapeV4Settings.Killaura.SwitchToWeapon.Value and Weapon then
+                                        SwitchItem(Weapon.itemType)
+                                    end
+                                end)
+
+                                task.spawn(function()
+                                    if Weapon then
+                                        local direction = CFrame.lookAt(LocalPlayer.Character.PrimaryPart.Position, Entity.PrimaryPart.Position).lookVector
+                                        local magnitude = (LocalPlayer.Character.PrimaryPart.Position - Entity.PrimaryPart.Position).Magnitude
+                                        local selfPos = LocalPlayer.Character.PrimaryPart.Position + (direction * (magnitude - 14))
+
+                                        BedwarsRemotes.SwordHitRemote:FireServer({
+                                            weapon = Weapon.tool,
+                                            chargedAttack = {chargeRatio = 0},
+                                            entityInstance = Entity,
+                                            validate = {
+                                                raycast = {
+                                                    cameraPosition = {value = LocalPlayer.Character.PrimaryPart.Position},
+                                                    cursorDirection = {value = direction}
+                                                },
+                                                targetPosition = {value = Entity.PrimaryPart.Position},
+                                                selfPosition = {value = selfPos}
+                                            }
+                                        })
+                                    end
+                                end)
+
+                                task.spawn(function()
+                                    if EquippedKit == "summoner" then
+                                        BedwarsRemotes.SummonerClawAttackRequest:FireServer({
+                                            clientTime = tick(),
+                                            direction = LocalPlayer.Character.PrimaryPart.CFrame.LookVector,
+                                            position = LocalPlayer.Character.PrimaryPart.Position
+                                        })
+                                    end
+                                end)
+                            end
+
+                            local function GetSword()
+                                local bestSword, maxDamage = nil, -math.huge
+                                for _, item in pairs(GetInventory(LocalPlayer).items) do
+                                    local meta = BedwarsTables.ItemTable[item.itemType]
+                                    if meta and meta.sword then
+                                        local damage = meta.sword.damage / meta.sword.attackSpeed
+                                        if damage > maxDamage then
+                                            bestSword = item
+                                            maxDamage = damage
+                                        end
+                                    end
+                                end
+                                return bestSword
+                            end
+
+                            task.spawn(function()
+                                repeat
+                                    task.wait(VapeV4Settings.Killaura.Speed.Value == 100 and 0 or (1 / VapeV4Settings.Killaura.Speed.Value))
+                                    local hitChance = VapeV4Settings.Killaura.HitChance.Value == 100 or math.random(1, (100 / VapeV4Settings.Killaura.HitChance.Value)) == 1
+
+                                    if IsAlive(LocalPlayer) and GetMatchState() ~= 0 and hitChance then
+                                        local entity, dist = FindNearestEntity(VapeV4Settings.Killaura.Range.Value)
+                                        local sword = GetSword()
+
+                                        if sword and sword.tool and not entity then
+                                            PlayAnimation(KillauraAnimations.Neutral)
+                                        end
+
+                                        if entity then
+                                            SwordHit(entity, sword, dist)
+                                        elseif KillauraBox then
+                                            pcall(function()
+                                                KillauraBox:Destroy()
+                                                KillauraBox = nil
+                                            end)
+                                        end
+                                    end
+                                until shared.VapeV4UnInjected or not VapeV4Settings.Killaura.Value
+
+                                if KillauraBox then
+                                    KillauraBox:Destroy()
+                                    KillauraBox = nil
+                                end
+                            end)
+                        end,
+                        HoverText = "Automatically Hits Entities For You 🎯"
+                    })
+
+                    Killaura:CreateToggle({Name = "CustomAnimation", Function = function() end, DefaultValue = true})
+                    Killaura:CreateToggle({Name = "SwitchToWeapon", Function = function() end, DefaultValue = true})
+                    Killaura:CreateToggle({Name = "ShowEnemy", Function = function() end, DefaultValue = true})
+                    Killaura:CreateToggle({Name = "WallCheck", Function = function() end, DefaultValue = false})
+                    Killaura:CreateSlider({Name = "HitChance", Function = function() end, DefaultValue = 100, MaximumValue = 100})
+                    Killaura:CreateSlider({Name = "Speed", Function = function() end, DefaultValue = 100, MaximumValue = 100})
+                    Killaura:CreateSlider({Name = "Range", Function = function() end, DefaultValue = 19, MaximumValue = 19})
+                    Killaura:CreateSlider({Name = "Angle", Function = function() end, DefaultValue = 360, MaximumValue = 360})
+
+                    local exceptions = Killaura:CreateDropdown({Name = "Exeptions", HoverText = "What Is Required For Killaura To Work"})
+                    exceptions:CreateToggle({Name = "MouseDown", Function = function() end, DefaultValue = false})
+                    exceptions:CreateToggle({Name = "GuiClosed", Function = function() end, DefaultValue = false})
+
+                    local animations = Killaura:CreateDropdown({Name = "Animations", HoverText = "Pick The Animation Of Your Choice"})
+                    animations:CreateToggle({
+                        Name = "VapeV4Heartbeat",
+                        Function = function()
+                            if VapeV4Settings.Killaura.Animations.VapeV4Heartbeat.Value then
+                                SelectedAnimation = "VapeV4Heartbeat"
+                            end
+                        end,
+                        DefaultValue = false
+                    })
+
+                    animations:CreateToggle({
+                        Name = "VapeV4Classic",
+                        Function = function()
+                            if VapeV4Settings.Killaura.Animations.VapeV4Classic.Value then
+                                SelectedAnimation = "VapeV4Classic"
+                            end
+                        end,
+                        DefaultValue = true
+                    })
+
+                    animations:CreateToggle({
+                        Name = "VapeV4Old",
+                        Function = function()
+                            if VapeV4Settings.Killaura.Animations.VapeV4Old.Value then
+                                SelectedAnimation = "VapeV4Old"
+                            end
+                        end,
+                        DefaultValue = false
+                    })
+
+                    Killaura:CreateColorSlider({
+                        Name = "TargetBoxColor",
+                        Function = function() end,
+                        DefaultValue = Color3.new(1, 0.278431, 0.290196)
+                    })
+
+                    UnInjectEvent.Event:Connect(function()
+                        if KillauraBox then
+                            KillauraBox:Destroy()
+                            KillauraBox = nil
+                        end
+                    end)
+                end)
+            end
+        end,
+        Default = false,
+        Tooltip = "Updated KillAura from Vape V4"
+    })
+end)
+																																										
 run(function()
 	local FastBreak
 	local Time
