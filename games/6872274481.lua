@@ -2424,217 +2424,142 @@ run(function()
     })
 end)
 
-task.spawn(function()
-    vape.Categories.Utility:CreateModule({
-        Name = 'KillAura V2',
+run(function()
+    InfiniteFly = vape.Categories.Blatant:CreateModule({
+        Name = 'InfiniteFly',
         Function = function(callback)
             if callback then
-                task.spawn(function()
-                    local SelectedAnimation = nil
-                    local KillauraBox
+                local frictionTable = {}
+                local success, proper = false, true
+                local up, down = 0, 0
+                local rayCheck = RaycastParams.new()
+                rayCheck.RespectCanCollide = true
+                local clone, oldroot, hip, valid
 
-                    local Killaura = CombatTab:CreateToggle({
-                        Name = "Killaura",
-                        Function = function()
-                            local KillAuraAnimationCooldown = false
-
-                            local function SwordHit(Entity, Weapon, NearestEntityDistance)
-                                task.spawn(function()
-                                    if VapeV4Settings.Killaura.CustomAnimation.Value == true and not KillAuraAnimationCooldown then
-                                        KillAuraAnimationCooldown = true
-                                        PlayAnimation(KillauraAnimations[SelectedAnimation])
-                                        KillAuraAnimationCooldown = false
-                                    end
-                                end)
-
-                                task.spawn(function()
-                                    if VapeV4Settings.Killaura.ShowEnemy.Value == true and not KillauraBox then
-                                        KillauraBox = Instance.new("Part")
-                                        KillauraBox.Parent = workspace
-                                        KillauraBox.Name = "KillauraBox"
-                                        KillauraBox.Transparency = 0.6
-                                        KillauraBox.CanCollide = false
-                                        KillauraBox.CanQuery = false
-                                        KillauraBox.Anchored = true
-                                        KillauraBox.Material = Enum.Material.SmoothPlastic
-                                        KillauraBox.CFrame = Entity.PrimaryPart.CFrame
-
-                                        local color = VapeV4Settings.Killaura.TargetBoxColor.Value:split(",")
-                                        KillauraBox.Color = Color3.new(color[1], color[2], color[3])
-                                        KillauraBox.Size = Vector3.new(4, 6, 4)
-                                    elseif KillauraBox then
-                                        KillauraBox.CFrame = Entity.PrimaryPart.CFrame
-                                        local color = VapeV4Settings.Killaura.TargetBoxColor.Value:split(",")
-                                        KillauraBox.Color = Color3.new(color[1], color[2], color[3])
-                                    end
-                                end)
-
-                                local lookVector = LocalPlayer.Character.PrimaryPart.CFrame.LookVector
-                                local unit = (Entity.PrimaryPart.Position - LocalPlayer.Character.PrimaryPart.Position).Unit
-                                local angle = math.acos(unit:Dot(lookVector))
-
-                                if angle > math.rad(VapeV4Settings.Killaura.Angle.Value / 2) then return end
-
-                                local rayParams = RaycastParams.new()
-                                rayParams.FilterDescendantsInstances = {CollectionService:GetTagged("block")}
-                                rayParams.FilterType = Enum.RaycastFilterType.Include
-                                local rayResult = workspace:Raycast(LocalPlayer.Character.PrimaryPart.Position, Entity.PrimaryPart.Position, rayParams)
-
-                                if VapeV4Settings.Killaura.WallCheck.Value and rayResult then return end
-                                if VapeV4Settings.Killaura.Exeptions.MouseDown.Value and not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then return end
-                                if VapeV4Settings.Killaura.Exeptions.GuiClosed.Value and ContainerFrame.Visible then return end
-
-                                task.spawn(function()
-                                    if VapeV4Settings.Killaura.SwitchToWeapon.Value and Weapon then
-                                        SwitchItem(Weapon.itemType)
-                                    end
-                                end)
-
-                                task.spawn(function()
-                                    if Weapon then
-                                        local direction = CFrame.lookAt(LocalPlayer.Character.PrimaryPart.Position, Entity.PrimaryPart.Position).lookVector
-                                        local magnitude = (LocalPlayer.Character.PrimaryPart.Position - Entity.PrimaryPart.Position).Magnitude
-                                        local selfPos = LocalPlayer.Character.PrimaryPart.Position + (direction * (magnitude - 14))
-
-                                        BedwarsRemotes.SwordHitRemote:FireServer({
-                                            weapon = Weapon.tool,
-                                            chargedAttack = {chargeRatio = 0},
-                                            entityInstance = Entity,
-                                            validate = {
-                                                raycast = {
-                                                    cameraPosition = {value = LocalPlayer.Character.PrimaryPart.Position},
-                                                    cursorDirection = {value = direction}
-                                                },
-                                                targetPosition = {value = Entity.PrimaryPart.Position},
-                                                selfPosition = {value = selfPos}
-                                            }
-                                        })
-                                    end
-                                end)
-
-                                task.spawn(function()
-                                    if EquippedKit == "summoner" then
-                                        BedwarsRemotes.SummonerClawAttackRequest:FireServer({
-                                            clientTime = tick(),
-                                            direction = LocalPlayer.Character.PrimaryPart.CFrame.LookVector,
-                                            position = LocalPlayer.Character.PrimaryPart.Position
-                                        })
-                                    end
-                                end)
+                local function doClone()
+                    if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
+                        hip = entitylib.character.Humanoid.HipHeight
+                        oldroot = entitylib.character.HumanoidRootPart
+                        if not lplr.Character.Parent then return false end
+                        lplr.Character.Parent = game
+                        clone = oldroot:Clone()
+                        clone.Parent = lplr.Character
+                        oldroot.Parent = gameCamera
+                        bedwars.QueryUtil:setQueryIgnored(oldroot, true)
+                        clone.CFrame = oldroot.CFrame
+                        lplr.Character.PrimaryPart = clone
+                        lplr.Character.Parent = workspace
+                        for _, v in lplr.Character:GetDescendants() do
+                            if v:IsA('Weld') or v:IsA('Motor6D') then
+                                if v.Part0 == oldroot then v.Part0 = clone end
+                                if v.Part1 == oldroot then v.Part1 = clone end
                             end
-
-                            local function GetSword()
-                                local bestSword, maxDamage = nil, -math.huge
-                                for _, item in pairs(GetInventory(LocalPlayer).items) do
-                                    local meta = BedwarsTables.ItemTable[item.itemType]
-                                    if meta and meta.sword then
-                                        local damage = meta.sword.damage / meta.sword.attackSpeed
-                                        if damage > maxDamage then
-                                            bestSword = item
-                                            maxDamage = damage
-                                        end
-                                    end
-                                end
-                                return bestSword
-                            end
-
-                            task.spawn(function()
-                                repeat
-                                    task.wait(VapeV4Settings.Killaura.Speed.Value == 100 and 0 or (1 / VapeV4Settings.Killaura.Speed.Value))
-                                    local hitChance = VapeV4Settings.Killaura.HitChance.Value == 100 or math.random(1, (100 / VapeV4Settings.Killaura.HitChance.Value)) == 1
-
-                                    if IsAlive(LocalPlayer) and GetMatchState() ~= 0 and hitChance then
-                                        local entity, dist = FindNearestEntity(VapeV4Settings.Killaura.Range.Value)
-                                        local sword = GetSword()
-
-                                        if sword and sword.tool and not entity then
-                                            PlayAnimation(KillauraAnimations.Neutral)
-                                        end
-
-                                        if entity then
-                                            SwordHit(entity, sword, dist)
-                                        elseif KillauraBox then
-                                            pcall(function()
-                                                KillauraBox:Destroy()
-                                                KillauraBox = nil
-                                            end)
-                                        end
-                                    end
-                                until shared.VapeV4UnInjected or not VapeV4Settings.Killaura.Value
-
-                                if KillauraBox then
-                                    KillauraBox:Destroy()
-                                    KillauraBox = nil
-                                end
-                            end)
-                        end,
-                        HoverText = "Automatically Hits Entities For You 🎯"
-                    })
-
-                    Killaura:CreateToggle({Name = "CustomAnimation", Function = function() end, DefaultValue = true})
-                    Killaura:CreateToggle({Name = "SwitchToWeapon", Function = function() end, DefaultValue = true})
-                    Killaura:CreateToggle({Name = "ShowEnemy", Function = function() end, DefaultValue = true})
-                    Killaura:CreateToggle({Name = "WallCheck", Function = function() end, DefaultValue = false})
-                    Killaura:CreateSlider({Name = "HitChance", Function = function() end, DefaultValue = 100, MaximumValue = 100})
-                    Killaura:CreateSlider({Name = "Speed", Function = function() end, DefaultValue = 100, MaximumValue = 100})
-                    Killaura:CreateSlider({Name = "Range", Function = function() end, DefaultValue = 19, MaximumValue = 19})
-                    Killaura:CreateSlider({Name = "Angle", Function = function() end, DefaultValue = 360, MaximumValue = 360})
-
-                    local exceptions = Killaura:CreateDropdown({Name = "Exeptions", HoverText = "What Is Required For Killaura To Work"})
-                    exceptions:CreateToggle({Name = "MouseDown", Function = function() end, DefaultValue = false})
-                    exceptions:CreateToggle({Name = "GuiClosed", Function = function() end, DefaultValue = false})
-
-                    local animations = Killaura:CreateDropdown({Name = "Animations", HoverText = "Pick The Animation Of Your Choice"})
-                    animations:CreateToggle({
-                        Name = "VapeV4Heartbeat",
-                        Function = function()
-                            if VapeV4Settings.Killaura.Animations.VapeV4Heartbeat.Value then
-                                SelectedAnimation = "VapeV4Heartbeat"
-                            end
-                        end,
-                        DefaultValue = false
-                    })
-
-                    animations:CreateToggle({
-                        Name = "VapeV4Classic",
-                        Function = function()
-                            if VapeV4Settings.Killaura.Animations.VapeV4Classic.Value then
-                                SelectedAnimation = "VapeV4Classic"
-                            end
-                        end,
-                        DefaultValue = true
-                    })
-
-                    animations:CreateToggle({
-                        Name = "VapeV4Old",
-                        Function = function()
-                            if VapeV4Settings.Killaura.Animations.VapeV4Old.Value then
-                                SelectedAnimation = "VapeV4Old"
-                            end
-                        end,
-                        DefaultValue = false
-                    })
-
-                    Killaura:CreateColorSlider({
-                        Name = "TargetBoxColor",
-                        Function = function() end,
-                        DefaultValue = Color3.new(1, 0.278431, 0.290196)
-                    })
-
-                    UnInjectEvent.Event:Connect(function()
-                        if KillauraBox then
-                            KillauraBox:Destroy()
-                            KillauraBox = nil
                         end
-                    end)
-                end)
+                        return true
+                    end
+                    return false
+                end
+
+                local function revertClone()
+                    if not oldroot or not oldroot.Parent or not entitylib.isAlive then return false end
+                    lplr.Character.Parent = game
+                    oldroot.Parent = lplr.Character
+                    lplr.Character.PrimaryPart = oldroot
+                    lplr.Character.Parent = workspace
+                    oldroot.CanCollide = true
+                    for _, v in lplr.Character:GetDescendants() do
+                        if v:IsA('Weld') or v:IsA('Motor6D') then
+                            if v.Part0 == clone then v.Part0 = oldroot end
+                            if v.Part1 == clone then v.Part1 = oldroot end
+                        end
+                    end
+                    local oldclonepos = clone.Position.Y
+                    if clone then
+                        clone:Destroy()
+                        clone = nil
+                    end
+                    local origcf = {oldroot.CFrame:GetComponents()}
+                    if valid then origcf[2] = oldclonepos end
+                    oldroot.CFrame = CFrame.new(unpack(origcf))
+                    oldroot.Transparency = 1
+                    oldroot = nil
+                    entitylib.character.Humanoid.HipHeight = hip or 2
+                end
+
+                local function updateVelocity()
+                    -- Your update velocity logic here
+                end
+
+                -- InfiniteFly module logic
+                if callback then
+                    success = doClone()
+                    if not success then
+                        InfiniteFly:Toggle()
+                        return
+                    end
+
+                    InfiniteFly:Clean(runService.PreSimulation:Connect(function(dt)
+                        if entitylib.isAlive then
+                            local mass = 1.5 + ((up + down) * VerticalValue.Value)
+                            local root = entitylib.character.RootPart
+                            local moveDirection = entitylib.character.Humanoid.MoveDirection
+                            local velo = getSpeed()
+                            local destination = (moveDirection * math.max(Value.Value - velo, 0) * dt)
+                            rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
+                            root.CFrame += destination
+                            root.AssemblyLinearVelocity = (moveDirection * velo) + Vector3.new(0, mass, 0)
+
+                            local speedCFrame = {oldroot.CFrame:GetComponents()}
+                            if isnetworkowner(oldroot) then
+                                speedCFrame[1] = clone.CFrame.X
+                                speedCFrame[3] = clone.CFrame.Z
+                                if speedCFrame[2] < 2000 then speedCFrame[2] = 100000 end
+                                oldroot.CFrame = CFrame.new(unpack(speedCFrame))
+                                oldroot.Velocity = Vector3.new(clone.Velocity.X, oldroot.Velocity.Y, clone.Velocity.Z)
+                            else
+                                speedCFrame[2] = clone.CFrame.Y
+                                clone.CFrame = CFrame.new(unpack(speedCFrame))
+                            end
+                        end
+                    end))
+
+                    up, down = 0, 0
+                    InfiniteFly:Clean(inputService.InputBegan:Connect(function(input)
+                        if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
+                            up = 1
+                        elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
+                            down = -1
+                        end
+                    end))
+
+                    InfiniteFly:Clean(inputService.InputEnded:Connect(function(input)
+                        if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
+                            up = 0
+                        elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
+                            down = 0
+                        end
+                    end))
+
+                    if inputService.TouchEnabled then
+                        pcall(function()
+                            local jumpButton = lplr.PlayerGui.TouchGui.TouchControlFrame.JumpButton
+                            InfiniteFly:Clean(jumpButton:GetPropertyChangedSignal('ImageRectOffset'):Connect(function()
+                                up = jumpButton.ImageRectOffset.X == 146 and 1 or 0
+                            end))
+                        end)
+                    end
+                else
+                    revertClone()
+                end
+            else
+                revertClone()
             end
         end,
         Default = false,
-        Tooltip = "Updated KillAura from Vape V4"
+        Tooltip = 'Makes you go zoom.'
     })
 end)
-																																										
+																																																				
 run(function()
 	local FastBreak
 	local Time
