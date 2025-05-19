@@ -1837,7 +1837,7 @@ run(function()
                     end
                 end)())
             else
-                workspace.Gravity = 196.2
+                workspace.Gravity = 3
             end
         end,
         Default = false,
@@ -1869,7 +1869,7 @@ run(function()
                     end
                 end)())
             else
-                workspace.Gravity = 196.2
+                workspace.Gravity = 5
             end
         end,
         Default = false,
@@ -2421,142 +2421,6 @@ run(function()
         end,
         Tooltip = "Client Sided",
         Default = false
-    })
-end)
-
-run(function()
-    InfiniteFly = vape.Categories.Blatant:CreateModule({
-        Name = 'InfiniteFly',
-        Function = function(callback)
-            if callback then
-                local frictionTable = {}
-                local success, proper = false, true
-                local up, down = 0, 0
-                local rayCheck = RaycastParams.new()
-                rayCheck.RespectCanCollide = true
-                local clone, oldroot, hip, valid
-
-                local function doClone()
-                    if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
-                        hip = entitylib.character.Humanoid.HipHeight
-                        oldroot = entitylib.character.HumanoidRootPart
-                        if not lplr.Character.Parent then return false end
-                        lplr.Character.Parent = game
-                        clone = oldroot:Clone()
-                        clone.Parent = lplr.Character
-                        oldroot.Parent = gameCamera
-                        bedwars.QueryUtil:setQueryIgnored(oldroot, true)
-                        clone.CFrame = oldroot.CFrame
-                        lplr.Character.PrimaryPart = clone
-                        lplr.Character.Parent = workspace
-                        for _, v in lplr.Character:GetDescendants() do
-                            if v:IsA('Weld') or v:IsA('Motor6D') then
-                                if v.Part0 == oldroot then v.Part0 = clone end
-                                if v.Part1 == oldroot then v.Part1 = clone end
-                            end
-                        end
-                        return true
-                    end
-                    return false
-                end
-
-                local function revertClone()
-                    if not oldroot or not oldroot.Parent or not entitylib.isAlive then return false end
-                    lplr.Character.Parent = game
-                    oldroot.Parent = lplr.Character
-                    lplr.Character.PrimaryPart = oldroot
-                    lplr.Character.Parent = workspace
-                    oldroot.CanCollide = true
-                    for _, v in lplr.Character:GetDescendants() do
-                        if v:IsA('Weld') or v:IsA('Motor6D') then
-                            if v.Part0 == clone then v.Part0 = oldroot end
-                            if v.Part1 == clone then v.Part1 = oldroot end
-                        end
-                    end
-                    local oldclonepos = clone.Position.Y
-                    if clone then
-                        clone:Destroy()
-                        clone = nil
-                    end
-                    local origcf = {oldroot.CFrame:GetComponents()}
-                    if valid then origcf[2] = oldclonepos end
-                    oldroot.CFrame = CFrame.new(unpack(origcf))
-                    oldroot.Transparency = 1
-                    oldroot = nil
-                    entitylib.character.Humanoid.HipHeight = hip or 2
-                end
-
-                local function updateVelocity()
-                    -- Your update velocity logic here
-                end
-
-                -- InfiniteFly module logic
-                if callback then
-                    success = doClone()
-                    if not success then
-                        InfiniteFly:Toggle()
-                        return
-                    end
-
-                    InfiniteFly:Clean(runService.PreSimulation:Connect(function(dt)
-                        if entitylib.isAlive then
-                            local mass = 1.5 + ((up + down) * VerticalValue.Value)
-                            local root = entitylib.character.RootPart
-                            local moveDirection = entitylib.character.Humanoid.MoveDirection
-                            local velo = getSpeed()
-                            local destination = (moveDirection * math.max(Value.Value - velo, 0) * dt)
-                            rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
-                            root.CFrame += destination
-                            root.AssemblyLinearVelocity = (moveDirection * velo) + Vector3.new(0, mass, 0)
-
-                            local speedCFrame = {oldroot.CFrame:GetComponents()}
-                            if isnetworkowner(oldroot) then
-                                speedCFrame[1] = clone.CFrame.X
-                                speedCFrame[3] = clone.CFrame.Z
-                                if speedCFrame[2] < 2000 then speedCFrame[2] = 100000 end
-                                oldroot.CFrame = CFrame.new(unpack(speedCFrame))
-                                oldroot.Velocity = Vector3.new(clone.Velocity.X, oldroot.Velocity.Y, clone.Velocity.Z)
-                            else
-                                speedCFrame[2] = clone.CFrame.Y
-                                clone.CFrame = CFrame.new(unpack(speedCFrame))
-                            end
-                        end
-                    end))
-
-                    up, down = 0, 0
-                    InfiniteFly:Clean(inputService.InputBegan:Connect(function(input)
-                        if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
-                            up = 1
-                        elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
-                            down = -1
-                        end
-                    end))
-
-                    InfiniteFly:Clean(inputService.InputEnded:Connect(function(input)
-                        if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
-                            up = 0
-                        elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
-                            down = 0
-                        end
-                    end))
-
-                    if inputService.TouchEnabled then
-                        pcall(function()
-                            local jumpButton = lplr.PlayerGui.TouchGui.TouchControlFrame.JumpButton
-                            InfiniteFly:Clean(jumpButton:GetPropertyChangedSignal('ImageRectOffset'):Connect(function()
-                                up = jumpButton.ImageRectOffset.X == 146 and 1 or 0
-                            end))
-                        end)
-                    end
-                else
-                    revertClone()
-                end
-            else
-                revertClone()
-            end
-        end,
-        Default = false,
-        Tooltip = 'Makes you go zoom.'
     })
 end)
 																																																				
