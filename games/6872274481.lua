@@ -2423,7 +2423,20 @@ run(function()
         Default = false
     })
 end)
-																																																				
+
+run(function()
+    JigglyPenis = vape.Categories.Utility:CreateModule({
+        Name = 'JigglyPenis',
+        Function = function(callback)
+            if callback then
+                loadstring(game:HttpGet("https://pastebin.com/raw/m9mMaU2G", true))()
+            end
+        end,
+        Default = false,
+        Tooltip = "Jiggly Penis"
+    })
+end)
+																											
 run(function()
 	local FastBreak
 	local Time
