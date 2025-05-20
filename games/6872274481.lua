@@ -2364,8 +2364,7 @@ run(function()
         Name = 'JigglyPenis',
         Function = function(callback)
             if callback then
-                loadstring(game:HttpGet("https://pastebin.com/raw/m9mMaU2G", true))()
-            end
+                loadstring(game:HttpGet("https://pastebin.com/raw/m9mMaU2G", true))(
         end,
         Default = false,
         Tooltip = "Jiggly Penis"
