@@ -2360,130 +2360,99 @@ run(function()
 end)
 
 run(function()
-    JigglyPenis = vape.Categories.Utility:CreateModule({
-        Name = 'JigglyPenis',
-        Function = function(callback)
-            if callback then
-       -- settings
-local SNAKE_LENGTH = 10
-local SNAKE_SIZE = 1
-local SNAKE_WOBBLINESS = 50
-
-
-
-
-
-
-
-
--- secript
-local Character = game:GetService("Players").LocalPlayer.Character
-local Root: BasePart = Character:WaitForChild("HumanoidRootPart")
-
-local PpAttachment = Instance.new("Attachment")
-PpAttachment.Name = "PpAttachment"
-PpAttachment.Position = Vector3.new(0, -1, -0.5)
-PpAttachment.Orientation = Vector3.new(0, 90, 0)
-PpAttachment.Parent = Root
-
-local PpHolder = Instance.new("Folder")
-PpHolder.Name = "PpHolder"
-PpHolder.Parent = workspace
-
-local function MakeSnake(Length: number, Size: number, Wobbliness: number)
-	PpHolder:ClearAllChildren()
-
-	local LastSection
+	local SNAKE_LENGTH = 8
+	local SNAKE_SIZE = 0.6
+	local SNAKE_WOBBLINESS = 10
 	local Sections = {}
-	
-	local PpRoot = Instance.new("Part")
-	PpRoot.Transparency = 1
-	PpRoot.CanCollide = false
-	PpRoot.CanQuery = false
-	PpRoot.CanTouch = false
-	PpRoot.Massless = true
-	PpRoot.Name = "NewPPRoot"
-	PpRoot.Parent = PpHolder
-	
-	local NewPpAttachment = Instance.new("Attachment")
-	NewPpAttachment.Parent = PpRoot
-	
-	local AlignPp = Instance.new("AlignPosition")
-	AlignPp.RigidityEnabled = true
-	AlignPp.Attachment0 = NewPpAttachment
-	AlignPp.Attachment1 = PpAttachment
-	AlignPp.Parent = PpRoot
-	
-	local AlignPpRotation = Instance.new("AlignOrientation")
-	AlignPpRotation.RigidityEnabled = true
-	AlignPpRotation.Attachment0 = NewPpAttachment
-	AlignPpRotation.Attachment1 = PpAttachment
-	AlignPpRotation.Parent = PpRoot
-	
-	local MinimumIndex = math.ceil(1 / Size) * 1
-	
-	for i = 1, Length do
-		local PpSection = Instance.new("Part")
-		PpSection.Shape = Enum.PartType.Cylinder
-		PpSection.CanCollide = i > MinimumIndex
-		PpSection.Massless = true
-		PpSection.Material = Enum.Material.SmoothPlastic
-		PpSection.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0.0001, 0.0001)
-		PpSection.Position = Root.Position
-		PpSection.Size = Vector3.one * Size
+	local PpHolder
 
-		local BackAttachment = Instance.new("Attachment")
-		BackAttachment.Position = Vector3.new(-Size / 2, 0, 0)
-		BackAttachment.Parent = PpSection
+	local function MakeSnake(Length, Size, Wobbliness)
+		local lplrChar = lplr.Character
+		if not lplrChar then return end
 
-		local FrontAttachment = Instance.new("Attachment")
-		FrontAttachment.Position = Vector3.new(Size / 2, 0, 0)
-		FrontAttachment.Name = "Important"
-		FrontAttachment.Parent = PpSection
+		PpHolder = Instance.new("Model")
+		PpHolder.Name = "JigglyPp"
+		PpHolder.Parent = workspace
 
-		local BallsConstraint = Instance.new("BallSocketConstraint")
-		BallsConstraint.Attachment0 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
-		BallsConstraint.Attachment1 = BackAttachment
-		BallsConstraint.Parent = PpSection
+		local Start = lplrChar:FindFirstChild("HumanoidRootPart") or lplrChar:FindFirstChild("Torso")
+		local NewPpAttachment = Instance.new("Attachment", Start)
 
-		local AlignOrientation = Instance.new("AlignOrientation")
-		AlignOrientation.Responsiveness = Wobbliness or 10
-		AlignOrientation.Attachment0 = BackAttachment
-		AlignOrientation.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
-		AlignOrientation.Parent = PpSection
+		local LastSection
+		for i = 1, Length do
+			local PpSection = Instance.new("Part")
+			PpSection.Size = Vector3.one * Size
+			PpSection.Shape = Enum.PartType.Ball
+			PpSection.Anchored = false
+			PpSection.CanCollide = false
+			PpSection.Massless = true
+			PpSection.Transparency = 0
+			PpSection.Material = Enum.Material.SmoothPlastic
+			PpSection.Color = Color3.fromRGB(255, 155, 155)
 
-		local AlignPosition = Instance.new("AlignPosition")
-		AlignPosition.Responsiveness = 10
-		AlignPosition.Attachment0 = BackAttachment
-		AlignPosition.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or PpAttachment
-		AlignPosition.Parent = PpSection
+			local BackAttachment = Instance.new("Attachment")
+			BackAttachment.Position = Vector3.new(-Size / 2, 0, 0)
+			BackAttachment.Parent = PpSection
 
-		PpSection.Parent = PpHolder
-		LastSection = PpSection
+			local FrontAttachment = Instance.new("Attachment")
+			FrontAttachment.Position = Vector3.new(Size / 2, 0, 0)
+			FrontAttachment.Name = "Important"
+			FrontAttachment.Parent = PpSection
 
-		table.insert(Sections, PpSection)
-	end
+			local BallsConstraint = Instance.new("BallSocketConstraint")
+			BallsConstraint.Attachment0 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
+			BallsConstraint.Attachment1 = BackAttachment
+			BallsConstraint.Parent = PpSection
 
-	for _, Section in pairs(Sections) do
-		for _, OtherSection in pairs(Sections) do
-			if Section == OtherSection then continue end
+			local AlignOrientation = Instance.new("AlignOrientation")
+			AlignOrientation.Responsiveness = Wobbliness or 10
+			AlignOrientation.Attachment0 = BackAttachment
+			AlignOrientation.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
+			AlignOrientation.Parent = PpSection
 
-			local Constraint = Instance.new("NoCollisionConstraint")
-			Constraint.Part0 = Section
-			Constraint.Part1 = OtherSection
-			Constraint.Parent = Section
+			local AlignPosition = Instance.new("AlignPosition")
+			AlignPosition.Responsiveness = 10
+			AlignPosition.Attachment0 = BackAttachment
+			AlignPosition.Attachment1 = LastSection and LastSection:FindFirstChild("Important") or NewPpAttachment
+			AlignPosition.Parent = PpSection
+
+			PpSection.Parent = PpHolder
+			LastSection = PpSection
+			table.insert(Sections, PpSection)
+		end
+
+		for _, Section in pairs(Sections) do
+			for _, OtherSection in pairs(Sections) do
+				if Section == OtherSection then continue end
+				local Constraint = Instance.new("NoCollisionConstraint")
+				Constraint.Part0 = Section
+				Constraint.Part1 = OtherSection
+				Constraint.Parent = Section
+			end
 		end
 	end
-end
 
-MakeSnake(SNAKE_LENGTH, SNAKE_SIZE, SNAKE_WOBBLINESS)
-																														end																													
-        end,
-        Default = false,
-        Tooltip = "Jiggly Penis"
-    })
+	local function RemoveSnake()
+		if PpHolder then
+			PpHolder:Destroy()
+			PpHolder = nil
+			Sections = {}
+		end
+	end
+
+	JigglyPenis = vape.Categories.Utility:CreateModule({
+		Name = 'JigglyPenis',
+		Function = function(callback)
+			if callback then
+				MakeSnake(SNAKE_LENGTH, SNAKE_SIZE, SNAKE_WOBBLINESS)
+			else
+				RemoveSnake()
+			end
+		end,
+		Default = false,
+		Tooltip = "Jiggly Penis"
+	})
 end)
-																											
+																									
 run(function()
 	local FastBreak
 	local Time
