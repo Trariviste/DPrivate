@@ -2335,9 +2335,6 @@ run(function()
         Tooltip = "Free Nightmare emote!1!1!1!1"
     })
 end)
-
-run(function()
-
 																									
 run(function()
     local runService = game:GetService("RunService")
