@@ -2435,8 +2435,8 @@ run(function()
 
 	local projectileHitting = false
 
-	antihit (semi works)= vape.Categories.Blatant:CreateModule({
-		Name = 'Anti Hit (semi works)',
+	antihit = vape.Categories.Blatant:CreateModule({
+		Name = 'Anti Hit',
 		Function = function(call)
 			if call then
 				antihit:Clean(runService.PreSimulation:Connect(function()
