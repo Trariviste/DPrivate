@@ -2888,8 +2888,10 @@ run(function()
 end)
 
 run(function()
-    InvisibilityV2 = vape.Categories.Blatant:CreateModule({
-        Name = 'InvisibilityV2',
+    local loopConn
+
+    Invisibility = vape.Categories.Blatant:CreateModule({
+        Name = 'Invisibility',
         Function = function(callback)
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
@@ -2897,15 +2899,20 @@ run(function()
             local Player = Players.LocalPlayer
             local Character = Player.Character or Player.CharacterAdded:Wait()
             local Humanoid = Character:FindFirstChild("Humanoid")
-            if not Humanoid or Humanoid.RigType == Enum.HumanoidRigType.R6 then return end
 
-            local RootPart = Humanoid.RootPart
-            local loopConn
+            -- Prevent R6
+            if not Humanoid or Humanoid.RigType == Enum.HumanoidRigType.R6 then
+                return
+            end
 
-            local function CreateLoop()
-                if loopConn then loopConn:Disconnect() end
+            local RootPart = Humanoid:FindFirstChild("RootPart") or Character:FindFirstChild("HumanoidRootPart")
+            if not RootPart then return end
+
+            -- ON: Start loop
+            if callback then
+                if loopConn then loopConn:Disconnect() end -- Just in case
                 loopConn = RunService.Heartbeat:Connect(function()
-                    if not callback or not Character or not RootPart or not Humanoid then return end
+                    if not Character or not RootPart or not Humanoid then return end
 
                     local oldcf = RootPart.CFrame
                     local oldcamoffset = Humanoid.CameraOffset
@@ -2921,32 +2928,23 @@ run(function()
                     loaded:Play()
                     loaded.TimePosition = 0.77
                     loaded:AdjustSpeed(0)
+
                     RunService.RenderStepped:Wait()
                     loaded:Stop()
 
                     Humanoid.CameraOffset = oldcamoffset
                     RootPart.CFrame = oldcf
                 end)
-            end
-
-            Player.CharacterAdded:Connect(function(char)
-                Character = char
-                Humanoid = Character:WaitForChild("Humanoid")
-                RootPart = Character:WaitForChild("HumanoidRootPart")
-                wait(0.5)
-                if callback then
-                    CreateLoop()
-                end
-            end)
-
-            if callback then
-                CreateLoop()
             else
-                if loopConn then loopConn:Disconnect() end
+                -- OFF: Disconnect the loop
+                if loopConn then
+                    loopConn:Disconnect()
+                    loopConn = nil
+                end
             end
         end,
         Default = false,
-        Tooltip = "ReWorked Invis"
+        Tooltip = "ReWorked Invis with working toggle"
     })
 end)
 																																
