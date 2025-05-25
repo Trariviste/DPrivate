@@ -1871,7 +1871,7 @@ run(function()
         Default = 50
     })
 end)
-
+																
 run(function()
     ToyAnimation = vape.Categories.Blatant:CreateModule({
         Name = 'ToyAnimation',
@@ -2544,7 +2544,20 @@ run(function()
 	antihitgroundtime.Object.Visible = false
 	antihitairtime.Object.Visible = false
 end)
-																										
+
+run(function()
+    GetHost = vape.Categories.Utility:CreateModule({
+        Name = 'GetHost',
+        Function = function(callback)
+            if callback then
+               game.Players.LocalPlayer:SetAttribute("CustomMatchRole", "host")
+            end
+        end,
+        Default = false,
+        Tooltip = ":troll:"
+    })
+end)
+																											
 run(function()
 	local FastBreak
 	local Time
