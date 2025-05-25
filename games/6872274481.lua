@@ -2548,9 +2548,12 @@ end)
 run(function()
     GetHost = vape.Categories.Utility:CreateModule({
         Name = 'GetHost',
-        Function = function(callback)
-            if callback then
-               game.Players.LocalPlayer:SetAttribute("CustomMatchRole", "host")
+        Function = function(enabled)
+            local player = game.Players.LocalPlayer
+            if enabled then
+                player:SetAttribute("CustomMatchRole", "host")
+            else
+                player:SetAttribute("CustomMatchRole", nil) -- remove the role
             end
         end,
         Default = false,
