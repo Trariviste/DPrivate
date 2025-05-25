@@ -2888,8 +2888,8 @@ run(function()
 end)
 
 run(function()
-    Invisibility V2 = vape.Categories.Blatant:CreateModule({
-        Name = 'Invisibility V2',
+    InvisibilityV2 = vape.Categories.Blatant:CreateModule({
+        Name = 'InvisibilityV2',
         Function = function(callback)
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
