@@ -2886,6 +2886,69 @@ run(function()
         Tooltip = "Client Sided"
     })
 end)
+
+run(function()
+    Invisibility V2 = vape.Categories.Blatant:CreateModule({
+        Name = 'Invisibility V2',
+        Function = function(callback)
+            local Players = game:GetService("Players")
+            local RunService = game:GetService("RunService")
+
+            local Player = Players.LocalPlayer
+            local Character = Player.Character or Player.CharacterAdded:Wait()
+            local Humanoid = Character:FindFirstChild("Humanoid")
+            if not Humanoid or Humanoid.RigType == Enum.HumanoidRigType.R6 then return end
+
+            local RootPart = Humanoid.RootPart
+            local loopConn
+
+            local function CreateLoop()
+                if loopConn then loopConn:Disconnect() end
+                loopConn = RunService.Heartbeat:Connect(function()
+                    if not callback or not Character or not RootPart or not Humanoid then return end
+
+                    local oldcf = RootPart.CFrame
+                    local oldcamoffset = Humanoid.CameraOffset
+                    local newcf = RootPart.CFrame - Vector3.new(0, Humanoid.HipHeight + (RootPart.Size.Y / 2) - 1, 0)
+
+                    RootPart.CFrame = newcf * CFrame.Angles(0, 0, math.rad(180))
+                    Humanoid.CameraOffset = Vector3.new(0, -5, 0)
+
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = "http://www.roblox.com/asset/?id=11360825341"
+                    local loaded = Humanoid.Animator:LoadAnimation(anim)
+                    loaded.Priority = Enum.AnimationPriority.Action4
+                    loaded:Play()
+                    loaded.TimePosition = 0.77
+                    loaded:AdjustSpeed(0)
+                    RunService.RenderStepped:Wait()
+                    loaded:Stop()
+
+                    Humanoid.CameraOffset = oldcamoffset
+                    RootPart.CFrame = oldcf
+                end)
+            end
+
+            Player.CharacterAdded:Connect(function(char)
+                Character = char
+                Humanoid = Character:WaitForChild("Humanoid")
+                RootPart = Character:WaitForChild("HumanoidRootPart")
+                wait(0.5)
+                if callback then
+                    CreateLoop()
+                end
+            end)
+
+            if callback then
+                CreateLoop()
+            else
+                if loopConn then loopConn:Disconnect() end
+            end
+        end,
+        Default = false,
+        Tooltip = "ReWorked Invis"
+    })
+end)
 																																
 run(function()
 	local Mode
