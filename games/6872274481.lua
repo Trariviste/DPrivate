@@ -2634,7 +2634,7 @@ run(function()
 
                 local totalTime = 2
                 local interval = 0.1
-                local stepHeight = 5
+                local stepHeight = 13
                 local steps = totalTime / interval
 
                 task.spawn(function()
