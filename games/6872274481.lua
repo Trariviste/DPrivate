@@ -2621,7 +2621,7 @@ end)
             end
         end,
         Default = false,
-        Tooltip = "ReWorked Invis with working toggle and respawn support"
+        Tooltip = "When you die disable it and re enbale it"
     })
 
     -- Reapply on character spawn if still enabled
