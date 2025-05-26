@@ -2632,7 +2632,60 @@ end)
         end
     end)
 end)
-																												
+
+run(function()
+    local highJumping = false
+    local jumpThread
+
+    CframeHighJump = vape.Categories.Blatant:CreateModule({
+        Name = 'CframeHighJump',
+        Function = function(callback)
+            highJumping = callback
+
+            if not callback then
+                if jumpThread then
+                    jumpThread:Disconnect()
+                    jumpThread = nil
+                end
+                workspace.Gravity = 196.2
+                return
+            end
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local rootPart = character:WaitForChild("HumanoidRootPart")
+
+            local originalGravity = workspace.Gravity
+            workspace.Gravity = 0
+
+            local totalTime = 2
+            local interval = 0.1
+            local stepHeight = 5
+            local steps = totalTime / interval
+            local currentStep = 0
+
+            jumpThread = game:GetService("RunService").Heartbeat:Connect(function()
+                if not highJumping then return end
+
+                if currentStep < steps then
+                    currentStep += 1
+                    if rootPart and rootPart.Parent then
+                        rootPart.CFrame = rootPart.CFrame + Vector3.new(0, stepHeight, 0)
+                    end
+                else
+                    if jumpThread then
+                        jumpThread:Disconnect()
+                        jumpThread = nil
+                    end
+                    workspace.Gravity = originalGravity
+                end
+            end)
+        end,
+        Default = false,
+        Tooltip = "High jump using CFrame (toggleable)"
+    })
+end)
+																													
 run(function()
 	local FastBreak
 	local Time
