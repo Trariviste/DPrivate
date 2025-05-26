@@ -2621,7 +2621,7 @@ end)
             end
         end,
         Default = false,
-        Tooltip = "When you die disable it and re enbale it"
+        Tooltip = "When you die disable it and re enbale it. Or else they see you"
     })
 
     -- Reapply on character spawn if still enabled
