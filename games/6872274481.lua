@@ -2632,7 +2632,7 @@ run(function()
                 local originalGravity = workspace.Gravity
                 workspace.Gravity = 0
 
-                local totalTime = 2
+                local totalTime = 1
                 local interval = 0.1
                 local stepHeight = 13
                 local steps = totalTime / interval
