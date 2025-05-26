@@ -2823,7 +2823,7 @@ run(function()
 				end
 			end
 		end,
-		ExtraText = function()
+		ExtraText = function('')
 			return 'Heatseeker'
 		end,
 		Tooltip = 'Makes you go zoom.'
