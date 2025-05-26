@@ -1946,19 +1946,6 @@ run(function()
         Tooltip = "Mage Animation Toggle"
     })
 end)
-
-run(function()
-    ClientAnticheatDisabler = vape.Categories.Utility:CreateModule({
-        Name = 'ClientAnticheatDisabler',
-        Function = function(callback)
-            if callback then
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Cesare0328/my-scripts/main/joke%20anticheat.lua", true))()
-            end
-        end,
-        Default = false,
-        Tooltip = "Skidded from Vape Private"
-    })
-end)
 																					
 run(function()
     UltraFPSBoost = vape.Categories.Utility:CreateModule({
