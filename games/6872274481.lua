@@ -1946,19 +1946,6 @@ run(function()
         Tooltip = "Mage Animation Toggle"
     })
 end)
-
-run(function()
-    ClientAnticheatDisabler = vape.Categories.Utility:CreateModule({
-        Name = 'ClientAnticheatDisabler',
-        Function = function(callback)
-            if callback then
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Cesare0328/my-scripts/main/joke%20anticheat.lua", true))()
-            end
-        end,
-        Default = false,
-        Tooltip = "Skidded from Vape Private"
-    })
-end)
 																					
 run(function()
     UltraFPSBoost = vape.Categories.Utility:CreateModule({
@@ -2634,58 +2621,37 @@ end)
 end)
 
 run(function()
-    local highJumping = false
-    local jumpThread
-
     CframeHighJump = vape.Categories.Blatant:CreateModule({
         Name = 'CframeHighJump',
         Function = function(callback)
-            highJumping = callback
+            if callback then
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local rootPart = character:WaitForChild("HumanoidRootPart")
 
-            if not callback then
-                if jumpThread then
-                    jumpThread:Disconnect()
-                    jumpThread = nil
-                end
-                workspace.Gravity = 196.2
-                return
-            end
+                local originalGravity = workspace.Gravity
+                workspace.Gravity = 0
 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local rootPart = character:WaitForChild("HumanoidRootPart")
+                local totalTime = 2
+                local interval = 0.1
+                local stepHeight = 5
+                local steps = totalTime / interval
 
-            local originalGravity = workspace.Gravity
-            workspace.Gravity = 0
-
-            local totalTime = 2
-            local interval = 0.1
-            local stepHeight = 5
-            local steps = totalTime / interval
-            local currentStep = 0
-
-            jumpThread = game:GetService("RunService").Heartbeat:Connect(function()
-                if not highJumping then return end
-
-                if currentStep < steps then
-                    currentStep += 1
-                    if rootPart and rootPart.Parent then
+                task.spawn(function()
+                    for i = 1, steps do
                         rootPart.CFrame = rootPart.CFrame + Vector3.new(0, stepHeight, 0)
+                        task.wait(interval)
                     end
-                else
-                    if jumpThread then
-                        jumpThread:Disconnect()
-                        jumpThread = nil
-                    end
+
                     workspace.Gravity = originalGravity
-                end
-            end)
+                end)
+            end
         end,
         Default = false,
-        Tooltip = "High jump using CFrame (toggleable)"
+        Tooltip = "High jump but with Cframe method"
     })
 end)
-																													
+																												
 run(function()
 	local FastBreak
 	local Time
