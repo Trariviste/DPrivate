@@ -2561,32 +2561,30 @@ run(function()
     })
 end)
 
-run(function()
+ run(function()
     local loopConn
+    local invisibilityEnabled = false
 
     Invisibility = vape.Categories.Blatant:CreateModule({
         Name = 'Invisibility',
         Function = function(callback)
+            invisibilityEnabled = callback
+
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
-
             local Player = Players.LocalPlayer
-            local Character = Player.Character or Player.CharacterAdded:Wait()
-            local Humanoid = Character:FindFirstChild("Humanoid")
 
-            -- Prevent R6
-            if not Humanoid or Humanoid.RigType == Enum.HumanoidRigType.R6 then
-                return
-            end
+            local function startLoop(Character)
+                local Humanoid = Character:FindFirstChild("Humanoid")
+                if not Humanoid or Humanoid.RigType == Enum.HumanoidRigType.R6 then return end
 
-            local RootPart = Humanoid:FindFirstChild("RootPart") or Character:FindFirstChild("HumanoidRootPart")
-            if not RootPart then return end
+                local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                if not RootPart then return end
 
-            -- ON: Start loop
-            if callback then
-                if loopConn then loopConn:Disconnect() end -- Just in case
+                if loopConn then loopConn:Disconnect() end
+
                 loopConn = RunService.Heartbeat:Connect(function()
-                    if not Character or not RootPart or not Humanoid then return end
+                    if not invisibilityEnabled or not Character or not Humanoid or not RootPart then return end
 
                     local oldcf = RootPart.CFrame
                     local oldcamoffset = Humanoid.CameraOffset
@@ -2609,8 +2607,13 @@ run(function()
                     Humanoid.CameraOffset = oldcamoffset
                     RootPart.CFrame = oldcf
                 end)
+            end
+
+            -- Main toggle logic
+            local Character = Player.Character or Player.CharacterAdded:Wait()
+            if callback then
+                startLoop(Character)
             else
-                -- OFF: Disconnect the loop
                 if loopConn then
                     loopConn:Disconnect()
                     loopConn = nil
@@ -2618,10 +2621,18 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "ReWorked Invis with working toggle"
+        Tooltip = "ReWorked Invis with working toggle and respawn support"
     })
+
+    -- Reapply on character spawn if still enabled
+    game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
+        if invisibilityEnabled then
+            task.wait(0.5)
+            Invisibility.Function(true)
+        end
+    end)
 end)
-                                                        
+																												
 run(function()
 	local FastBreak
 	local Time
