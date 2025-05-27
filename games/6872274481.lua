@@ -2755,9 +2755,7 @@ end)
                     Humanoid.CameraOffset = oldcamoffset
                     RootPart.CFrame = oldcf
                 end)
-            end
-
-		vape:CreateNotification('Finished Loading', vape.VapeButton and 'Press the button in the top right to open GUI' or 'Press '..table.concat(vape.Keybind, ' + '):upper()..' to open GUI', 5)
+            
 																																end																															
             -- Main toggle logic
             local Character = Player.Character or Player.CharacterAdded:Wait()
