@@ -1871,7 +1871,155 @@ run(function()
         Default = 50
     })
 end)
-																
+
+run(function()
+	local ExploitDetectionSystem = {
+		Enabled = false,
+		Connections = {},
+		PlayerData = {}
+	}
+
+	local CORE_CONNECTIONS = {}
+	local function clean(con)
+		table.insert(CORE_CONNECTIONS, con)
+	end
+
+	local ExploitDetectionSystemConfig = {
+		DetectionThresholds = {
+			TeleportDistance = 400,
+			SpeedDistance = 25,
+			FlyDistance = 10000,
+			CheckInterval = 2.5
+		},
+		DetectedPlayers = {
+			Teleport = {},
+			Speed = {},
+			InfiniteFly = {},
+			Invisibility = {},
+			NameSuspicious = {},
+			Cached = {}
+		},
+		CacheEnabled = true,
+		TeleportDetection = true,
+		InfiniteFlyDetection = true,
+		InvisibilityDetection = true,
+		NukerDetection = true,
+		SpeedDetection = true,
+		NameDetection = true
+	}
+
+	local DetectionCore = {
+		updateCache = function(player, detectionType)
+			if not ExploitDetectionSystemConfig.CacheEnabled then return end
+			local success, cache = pcall(function()
+				local file = readfile('vape/Libraries/exploiters.json')
+				return file and httpService:JSONDecode(file) or {}
+			end)
+			cache = cache or {}
+			cache[player.Name] = cache[player.Name] or {
+				DisplayName = player.DisplayName,
+				UserId = tostring(player.UserId),
+				Detections = {}
+			}
+			if not table.find(cache[player.Name].Detections, detectionType) then
+				table.insert(cache[player.Name].Detections, detectionType)
+				pcall(function()
+					writefile('vape/Libraries/exploiters.json', httpService:JSONEncode(cache))
+				end)
+			end
+		end,
+		isValidTarget = function(player)
+			return player ~= lplr and not player:GetAttribute('Spectator') and store.queueType:find('bedwars') ~= nil
+		end,
+		notify = function(title, message, duration)
+			InfoNotification('HackerDetector', message, duration)
+			whitelist.customtags[title] = {{text = 'VAPE USER', color = Color3.fromRGB(255, 255, 0)}}
+		end
+	}
+
+	local DetectionMethods = {
+		Teleport = function(player)
+			local lastTeleport = player:GetAttribute('LastTeleported') or 0
+			local lastPosition = Vector3.zero
+			table.insert(ExploitDetectionSystem.Connections, player:GetAttributeChangedSignal('LastTeleported'):Connect(function()
+				lastTeleport = player:GetAttribute('LastTeleported')
+			end))
+			table.insert(ExploitDetectionSystem.Connections, player.CharacterAdded:Connect(function()
+				task.spawn(function()
+					repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+					lastPosition = player.Character.HumanoidRootPart.Position
+					task.delay(ExploitDetectionSystemConfig.DetectionThresholds.CheckInterval, function()
+						if ExploitDetectionSystem.Enabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+							local distance = (player.Character.HumanoidRootPart.Position - lastPosition).Magnitude
+							if distance >= ExploitDetectionSystemConfig.DetectionThresholds.TeleportDistance and
+								(player:GetAttribute('LastTeleported') - lastTeleport) == 0 then
+								DetectionCore.notify(player.Name, player.DisplayName .. ' detected using Teleport!', 100)
+								table.insert(ExploitDetectionSystemConfig.DetectedPlayers.Teleport, player)
+								DetectionCore.updateCache(player, 'Teleport')
+							end
+						end
+					end)
+				end)
+			end))
+		end,
+
+		Speed = function(player)
+			local lastPosition = Vector3.zero
+			task.spawn(function()
+				while ExploitDetectionSystem.Enabled do
+					if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+						local distance = (player.Character.HumanoidRootPart.Position - lastPosition).Magnitude
+						if distance > ExploitDetectionSystemConfig.DetectionThresholds.SpeedDistance then
+							DetectionCore.notify(player.Name, player.DisplayName .. ' detected using Speed!', 60)
+							table.insert(ExploitDetectionSystemConfig.DetectedPlayers.Speed, player)
+							DetectionCore.updateCache(player, 'Speed')
+						end
+						lastPosition = player.Character.HumanoidRootPart.Position
+					end
+					task.wait(ExploitDetectionSystemConfig.DetectionThresholds.CheckInterval)
+				end
+			end)
+		end,
+
+		-- Add other detection methods (InfiniteFly, Invisibility, NameCheck, CacheCheck) similarly if needed
+	}
+
+	local function initializeDetections(player)
+		if ExploitDetectionSystemConfig.TeleportDetection then task.spawn(DetectionMethods.Teleport, player) end
+		if ExploitDetectionSystemConfig.SpeedDetection then task.spawn(DetectionMethods.Speed, player) end
+	end
+
+	vape.Categories.Utility:CreateModule({
+		Name = "HackerDetector",
+		Tooltip = "Detects cheaters using multiple methods",
+		Function = function(callback)
+			ExploitDetectionSystem.Enabled = callback
+			if callback then
+				for _, player in pairs(playersService:GetPlayers()) do
+					if player ~= lplr then
+						initializeDetections(player)
+					end
+				end
+				clean(playersService.PlayerAdded:Connect(function(plr)
+					if plr ~= lplr then
+						initializeDetections(plr)
+					end
+				end))
+			else
+				for _, conn in pairs(ExploitDetectionSystem.Connections) do
+					conn:Disconnect()
+				end
+				table.clear(ExploitDetectionSystem.Connections)
+				for _, conn in pairs(CORE_CONNECTIONS) do
+					conn:Disconnect()
+				end
+				table.clear(CORE_CONNECTIONS)
+			end
+		end,
+		Default = false
+	})
+end)
+																	
 run(function()
     ToyAnimation = vape.Categories.Blatant:CreateModule({
         Name = 'ToyAnimation',
