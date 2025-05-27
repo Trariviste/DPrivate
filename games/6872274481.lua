@@ -2685,7 +2685,7 @@ run(function()
 	antihitairtime = antihit:CreateSlider({
 		Name = 'Air Time',
 		Decimal = 15,
-		Min = 0,
+	Min = 0,
 		Max = 2,
 		Default = 0.2
 	})
@@ -2709,7 +2709,7 @@ run(function()
     })
 end)
 
- run(function()
+run(function()
     local loopConn
     local invisibilityEnabled = false
 
@@ -2717,7 +2717,7 @@ end)
         Name = 'Invisibility',
         Function = function(callback)
             invisibilityEnabled = callback
-																																end																																
+
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
             local Player = Players.LocalPlayer
@@ -2755,11 +2755,12 @@ end)
                     Humanoid.CameraOffset = oldcamoffset
                     RootPart.CFrame = oldcf
                 end)
-            
-																																end																															
+            end
+
             -- Main toggle logic
             local Character = Player.Character or Player.CharacterAdded:Wait()
             if callback then
+                vape:CreateNotification('Invisibility Enabled', 'You are now invisible.', 4)
                 startLoop(Character)
             else
                 if loopConn then
@@ -2769,7 +2770,7 @@ end)
             end
         end,
         Default = false,
-        Tooltip = "When you die disable it and re enbale it. Or else they see you"
+        Tooltip = "ReWorked Invis with working toggle and respawn support"
     })
 
     -- Reapply on character spawn if still enabled
@@ -2780,7 +2781,7 @@ end)
         end
     end)
 end)
-																												
+																													
 run(function()
 	local FastBreak
 	local Time
