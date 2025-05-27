@@ -2717,9 +2717,7 @@ end)
         Name = 'Invisibility',
         Function = function(callback)
             invisibilityEnabled = callback
-
-	vape:CreateNotification('You are now invisible to everyone.', 5)
-																																	end																																
+																																end																																
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
             local Player = Players.LocalPlayer
@@ -2759,6 +2757,8 @@ end)
                 end)
             end
 
+		vape:CreateNotification('Finished Loading', vape.VapeButton and 'Press the button in the top right to open GUI' or 'Press '..table.concat(vape.Keybind, ' + '):upper()..' to open GUI', 5)
+																																end																															
             -- Main toggle logic
             local Character = Player.Character or Player.CharacterAdded:Wait()
             if callback then
