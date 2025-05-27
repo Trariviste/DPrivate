@@ -2718,6 +2718,8 @@ end)
         Function = function(callback)
             invisibilityEnabled = callback
 
+	vape:CreateNotification('You are now invisible to everyone.', 5)
+																																	end																																
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
             local Player = Players.LocalPlayer
