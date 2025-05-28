@@ -1636,8 +1636,12 @@ run(function()
 	local Mode
 	local Material
 	local Color
+	local UseWater
 	local rayCheck = RaycastParams.new()
 	rayCheck.RespectCanCollide = true
+
+	local terrain = workspace.Terrain
+	local oldTerrainRegion
 
 	local function getLowGround()
 		local mag = math.huge
@@ -1650,6 +1654,14 @@ run(function()
 		return mag
 	end
 
+	local function clearPreviousWater()
+		-- Clear only the AntiFall water region, not all terrain
+		if oldTerrainRegion then
+			terrain:FillRegion(oldTerrainRegion, 4, Enum.Material.Air)
+			oldTerrainRegion = nil
+		end
+	end
+
 	AntiFall = vape.Categories.Blatant:CreateModule({
 		Name = 'AntiFall',
 		Function = function(callback)
@@ -1659,79 +1671,91 @@ run(function()
 
 				local pos, debounce = getLowGround(), tick()
 				if pos ~= math.huge then
-					AntiFallPart = Instance.new('Part')
-					AntiFallPart.Size = Vector3.new(10000, 1, 10000)
-					AntiFallPart.Transparency = 1 - Color.Opacity
-					AntiFallPart.Material = Enum.Material[Material.Value]
-					AntiFallPart.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
-					AntiFallPart.Position = Vector3.new(0, pos - 2, 0)
-					AntiFallPart.CanCollide = Mode.Value == 'Collide'
-					AntiFallPart.Anchored = true
-					AntiFallPart.CanQuery = false
-					AntiFallPart.Parent = workspace
-					AntiFall:Clean(AntiFallPart)
-					AntiFall:Clean(AntiFallPart.Touched:Connect(function(touched)
-						if touched.Parent == lplr.Character and entitylib.isAlive and debounce < tick() then
-							debounce = tick() + 0.1
-							if Mode.Value == 'Normal' then
-								local top = getNearGround()
-								if top then
-									local lastTeleport = lplr:GetAttribute('LastTeleported')
-									local connection
-									connection = runService.PreSimulation:Connect(function()
-										if vape.Modules.Fly.Enabled or vape.Modules.InfiniteFly.Enabled or vape.Modules.LongJump.Enabled then
-											connection:Disconnect()
-											AntiFallDirection = nil
-											return
-										end
+					if UseWater.Enabled then
+						clearPreviousWater()
+						local size = Vector3.new(10000, 10, 10000)
+						local center = Vector3.new(0, pos - 7, 0)
+						local region = Region3.new(center - size / 2, center + size / 2)
+						oldTerrainRegion = region
+						terrain:FillBlock(CFrame.new(center), size, Enum.Material.Water)
+					else
+						local part = Instance.new('Part')
+						part.Size = Vector3.new(10000, 1, 10000)
+						part.Transparency = 1 - Color.Opacity
+						part.Material = Enum.Material[Material.Value]
+						part.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+						part.Position = Vector3.new(0, pos - 2, 0)
+						part.CanCollide = Mode.Value == 'Collide'
+						part.Anchored = true
+						part.CanQuery = false
+						part.Parent = workspace
+						AntiFall:Clean(part)
 
-										if entitylib.isAlive and lplr:GetAttribute('LastTeleported') == lastTeleport then
-											local delta = ((top - entitylib.character.RootPart.Position) * Vector3.new(1, 0, 1))
-											local root = entitylib.character.RootPart
-											AntiFallDirection = delta.Unit == delta.Unit and delta.Unit or Vector3.zero
-											root.Velocity *= Vector3.new(1, 0, 1)
-											rayCheck.FilterDescendantsInstances = {gameCamera, lplr.Character}
-											rayCheck.CollisionGroup = root.CollisionGroup
+						AntiFall:Clean(part.Touched:Connect(function(touched)
+							if touched.Parent == lplr.Character and entitylib.isAlive and debounce < tick() then
+								debounce = tick() + 0.1
+								if Mode.Value == 'Normal' then
+									local top = getNearGround()
+									if top then
+										local lastTeleport = lplr:GetAttribute('LastTeleported')
+										local connection
+										connection = runService.PreSimulation:Connect(function()
+											if vape.Modules.Fly.Enabled or vape.Modules.InfiniteFly.Enabled or vape.Modules.LongJump.Enabled then
+												connection:Disconnect()
+												AntiFallDirection = nil
+												return
+											end
 
-											local ray = workspace:Raycast(root.Position, AntiFallDirection, rayCheck)
-											if ray then
-												for _ = 1, 10 do
-													local dpos = roundPos(ray.Position + ray.Normal * 1.5) + Vector3.new(0, 3, 0)
-													if not getPlacedBlock(dpos) then
-														top = Vector3.new(top.X, pos.Y, top.Z)
-														break
+											if entitylib.isAlive and lplr:GetAttribute('LastTeleported') == lastTeleport then
+												local delta = ((top - entitylib.character.RootPart.Position) * Vector3.new(1, 0, 1))
+												local root = entitylib.character.RootPart
+												AntiFallDirection = delta.Unit == delta.Unit and delta.Unit or Vector3.zero
+												root.Velocity *= Vector3.new(1, 0, 1)
+												rayCheck.FilterDescendantsInstances = {gameCamera, lplr.Character}
+												rayCheck.CollisionGroup = root.CollisionGroup
+
+												local ray = workspace:Raycast(root.Position, AntiFallDirection, rayCheck)
+												if ray then
+													for _ = 1, 10 do
+														local dpos = roundPos(ray.Position + ray.Normal * 1.5) + Vector3.new(0, 3, 0)
+														if not getPlacedBlock(dpos) then
+															top = Vector3.new(top.X, pos.Y, top.Z)
+															break
+														end
 													end
 												end
-											end
 
-											root.CFrame += Vector3.new(0, top.Y - root.Position.Y, 0)
-											if not frictionTable.Speed then
-												root.AssemblyLinearVelocity = (AntiFallDirection * getSpeed()) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
-											end
+												root.CFrame += Vector3.new(0, top.Y - root.Position.Y, 0)
+												if not frictionTable.Speed then
+													root.AssemblyLinearVelocity = (AntiFallDirection * getSpeed()) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+												end
 
-											if delta.Magnitude < 1 then
+												if delta.Magnitude < 1 then
+													connection:Disconnect()
+													AntiFallDirection = nil
+												end
+											else
 												connection:Disconnect()
 												AntiFallDirection = nil
 											end
-										else
-											connection:Disconnect()
-											AntiFallDirection = nil
-										end
-									end)
-									AntiFall:Clean(connection)
+										end)
+										AntiFall:Clean(connection)
+									end
+								elseif Mode.Value == 'Velocity' then
+									entitylib.character.RootPart.Velocity = Vector3.new(entitylib.character.RootPart.Velocity.X, 100, entitylib.character.RootPart.Velocity.Z)
 								end
-							elseif Mode.Value == 'Velocity' then
-								entitylib.character.RootPart.Velocity = Vector3.new(entitylib.character.RootPart.Velocity.X, 100, entitylib.character.RootPart.Velocity.Z)
 							end
-						end
-					end))
+						end))
+					end
 				end
 			else
 				AntiFallDirection = nil
+				clearPreviousWater()
 			end
 		end,
-		Tooltip = 'Help\'s you with your Parkinson\'s\nPrevents you from falling into the void.'
+		Tooltip = 'Prevents falling into the void.\nUse optional water mode for swimming behavior.'
 	})
+
 	Mode = AntiFall:CreateDropdown({
 		Name = 'Move Mode',
 		List = {'Normal', 'Collide', 'Velocity'},
@@ -1740,14 +1764,16 @@ run(function()
 				AntiFallPart.CanCollide = val == 'Collide'
 			end
 		end,
-	Tooltip = 'Normal - Smoothly moves you towards the nearest safe point\nVelocity - Launches you upward after touching\nCollide - Allows you to walk on the part'
+		Tooltip = 'Normal: Moves to ground\nVelocity: Boost upward\nCollide: Lets you walk on block'
 	})
+
 	local materials = {'ForceField'}
 	for _, v in Enum.Material:GetEnumItems() do
 		if v.Name ~= 'ForceField' then
 			table.insert(materials, v.Name)
 		end
 	end
+
 	Material = AntiFall:CreateDropdown({
 		Name = 'Material',
 		List = materials,
@@ -1757,6 +1783,7 @@ run(function()
 			end
 		end
 	})
+
 	Color = AntiFall:CreateColorSlider({
 		Name = 'Color',
 		DefaultOpacity = 0.5,
@@ -1767,8 +1794,15 @@ run(function()
 			end
 		end
 	})
+
+	UseWater = AntiFall:CreateToggle({
+		Name = "Water Mode",
+		Function = function() end,
+		Default = false,
+		Tooltip = "Enables real swimming water below the map instead of a part"
+	})
 end)
-	
+															
 run(function()
     local connection
 
@@ -2092,19 +2126,6 @@ run(function()
             end
         end,
         Tooltip = "Mage Animation Toggle"
-    })
-end)
-
-run(function()
-    ClientAnticheatDisabler = vape.Categories.Utility:CreateModule({
-        Name = 'ClientAnticheatDisabler',
-        Function = function(callback)
-            if callback then
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Cesare0328/my-scripts/main/joke%20anticheat.lua", true))()
-            end
-        end,
-        Default = false,
-        Tooltip = "Skidded from Vape Private"
     })
 end)
 																					
