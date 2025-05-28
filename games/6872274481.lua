@@ -1701,6 +1701,7 @@ AntiFall = vape.Categories.Blatant:CreateModule({
 													if not getPlacedBlock(dpos) then
 														top = Vector3.new(top.X, pos.Y, top.Z)
 														break
+													end
 												end
 											end
 											root.CFrame += Vector3.new(0, top.Y - root.Position.Y, 0)
@@ -1773,7 +1774,7 @@ WaterToggle = AntiFall:CreateToggle({
 })
 
 end)
-																
+															
 run(function()
     local connection
 
