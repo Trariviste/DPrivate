@@ -1630,7 +1630,11 @@ run(function()
 	TargetCheck = Velocity:CreateToggle({Name = 'Only when targeting'})
 end)
 	
-local AntiFallDirection run(function() local AntiFall local Mode local Material local Color local AntiFallPart local waterRegionCFrame, waterRegionSize local rayCheck = RaycastParams.new() rayCheck.RespectCanCollide = true
+local AntiFallDirection run(function() local AntiFall, Mode, Material, Color, WaterToggle local rayCheck = RaycastParams.new() rayCheck.RespectCanCollide = true
+
+local terrain = workspace.Terrain
+local waterRegionCFrame = nil
+local waterRegionSize = Vector3.new(10000, 6, 10000)
 
 local function getLowGround()
 	local mag = math.huge
@@ -1652,13 +1656,13 @@ AntiFall = vape.Categories.Blatant:CreateModule({
 
 			local pos, debounce = getLowGround(), tick()
 			if pos ~= math.huge then
-				if Mode.Value == "Water" then
-					-- Fill Terrain with water
-					waterRegionSize = Vector3.new(10000, 1, 10000)
-					waterRegionCFrame = CFrame.new(Vector3.new(0, pos - 2, 0))
-					workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Water)
+				waterRegionCFrame = CFrame.new(0, pos - 2, 0)
+
+				if WaterToggle.Enabled then
+					terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Water)
 				else
-					AntiFallPart = Instance.new('Part')
+					terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
+					local AntiFallPart = Instance.new('Part')
 					AntiFallPart.Size = Vector3.new(10000, 1, 10000)
 					AntiFallPart.Transparency = 1 - Color.Opacity
 					AntiFallPart.Material = Enum.Material[Material.Value]
@@ -1683,7 +1687,6 @@ AntiFall = vape.Categories.Blatant:CreateModule({
 											AntiFallDirection = nil
 											return
 										end
-
 										if entitylib.isAlive and lplr:GetAttribute('LastTeleported') == lastTeleport then
 											local delta = ((top - entitylib.character.RootPart.Position) * Vector3.new(1, 0, 1))
 											local root = entitylib.character.RootPart
@@ -1691,7 +1694,6 @@ AntiFall = vape.Categories.Blatant:CreateModule({
 											root.Velocity *= Vector3.new(1, 0, 1)
 											rayCheck.FilterDescendantsInstances = {gameCamera, lplr.Character}
 											rayCheck.CollisionGroup = root.CollisionGroup
-
 											local ray = workspace:Raycast(root.Position, AntiFallDirection, rayCheck)
 											if ray then
 												for _ = 1, 10 do
@@ -1725,28 +1727,19 @@ AntiFall = vape.Categories.Blatant:CreateModule({
 			end
 		else
 			AntiFallDirection = nil
-			if waterRegionCFrame then
-				workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
-				waterRegionCFrame = nil
+			if WaterToggle.Enabled and waterRegionCFrame then
+				terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
 			end
 		end
 	end,
-	Tooltip = 'Helps you not fall into the void. Now with real water!'
+	Tooltip = 'Prevents falling into the void. Supports Water fallback when toggled.'
 })
 
 Mode = AntiFall:CreateDropdown({
 	Name = 'Move Mode',
-	List = {'Normal', 'Collide', 'Velocity', 'Water'},
-	Function = function(val)
-		if AntiFallPart then
-			AntiFallPart.CanCollide = val == 'Collide'
-		end
-		if val ~= "Water" and waterRegionCFrame then
-			workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
-			waterRegionCFrame = nil
-		end
-	end,
-	Tooltip = 'Normal - Smooth teleport\nVelocity - Launch upward\nCollide - Stand on platform\nWater - Swim in real terrain water'
+	List = {'Normal', 'Collide', 'Velocity'},
+	Function = function(val) end,
+	Tooltip = 'Normal - Smooth teleport\nVelocity - Launch up\nCollide - Walk on fallback part'
 })
 
 local materials = {'ForceField'}
@@ -1755,29 +1748,32 @@ for _, v in Enum.Material:GetEnumItems() do
 		table.insert(materials, v.Name)
 	end
 end
+
 Material = AntiFall:CreateDropdown({
 	Name = 'Material',
 	List = materials,
-	Function = function(val)
-		if AntiFallPart then
-			AntiFallPart.Material = Enum.Material[val]
-		end
-	end
+	Function = function(val) end
 })
 
 Color = AntiFall:CreateColorSlider({
 	Name = 'Color',
 	DefaultOpacity = 0.5,
-	Function = function(h, s, v, o)
-		if AntiFallPart then
-			AntiFallPart.Color = Color3.fromHSV(h, s, v)
-			AntiFallPart.Transparency = 1 - o
+	Function = function(h, s, v, o) end
+})
+
+WaterToggle = AntiFall:CreateToggle({
+	Name = "Water Mode",
+	Default = false,
+	Function = function(val)
+		if not val and waterRegionCFrame then
+			workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
 		end
-	end
+	end,
+	Tooltip = "Replaces AntiFall platform with swimmable water. Disabling clears the water."
 })
 
 end)
-															
+																
 run(function()
     local connection
 
