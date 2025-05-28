@@ -2508,7 +2508,7 @@ run(function()
         Default = false
     })
 end)
-																										end																									
+
 run(function()
     GetHost = vape.Categories.Utility:CreateModule({
         Name = 'GetHost',
