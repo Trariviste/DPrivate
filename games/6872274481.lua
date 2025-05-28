@@ -1630,18 +1630,61 @@ run(function()
 	TargetCheck = Velocity:CreateToggle({Name = 'Only when targeting'})
 end)
 	
+
+															
+run(function()
+    local connection
+
+    FlaglessHighjump = vape.Categories.Blatant:CreateModule({
+        Name = 'FlaglessHighjump',
+        Function = function(callback)
+            local player = game:GetService("Players").LocalPlayer
+            local defaultJumpPower = 50
+
+            local function applyHighJump()
+                local character = player.Character or player.CharacterAdded:Wait()
+                local humanoid = character:WaitForChild("Humanoid")
+                humanoid.UseJumpPower = true
+                humanoid.JumpPower = 205
+            end
+
+            local function resetJump()
+                local character = player.Character
+                if character then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.JumpPower = defaultJumpPower
+                    end
+                end
+            end
+
+            if callback then
+                applyHighJump()
+                connection = player.CharacterAdded:Connect(function()
+                    task.wait(0.1)
+                    applyHighJump()
+                end)
+            else
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+                resetJump()
+            end
+        end,
+        Tooltip = 'Bedwars has the worst AC LOL'
+    })
+end)
+
 local AntiFallDirection
 run(function()
-	local AntiFall
-	local Mode
-	local Material
-	local Color
-	local UseWater
+	local AntiFall, Mode, Material, Color, WaterToggle
 	local rayCheck = RaycastParams.new()
 	rayCheck.RespectCanCollide = true
 
 	local terrain = workspace.Terrain
-	local oldTerrainRegion
+	local waterRegionCFrame = nil
+	local waterRegionSize = Vector3.new(10000, 6, 10000)
 
 	local function getLowGround()
 		local mag = math.huge
@@ -1654,14 +1697,6 @@ run(function()
 		return mag
 	end
 
-	local function clearPreviousWater()
-		-- Clear only the AntiFall water region, not all terrain
-		if oldTerrainRegion then
-			terrain:FillRegion(oldTerrainRegion, 4, Enum.Material.Air)
-			oldTerrainRegion = nil
-		end
-	end
-
 	AntiFall = vape.Categories.Blatant:CreateModule({
 		Name = 'AntiFall',
 		Function = function(callback)
@@ -1671,27 +1706,24 @@ run(function()
 
 				local pos, debounce = getLowGround(), tick()
 				if pos ~= math.huge then
-					if UseWater.Enabled then
-						clearPreviousWater()
-						local size = Vector3.new(10000, 10, 10000)
-						local center = Vector3.new(0, pos - 7, 0)
-						local region = Region3.new(center - size / 2, center + size / 2)
-						oldTerrainRegion = region
-						terrain:FillBlock(CFrame.new(center), size, Enum.Material.Water)
-					else
-						local part = Instance.new('Part')
-						part.Size = Vector3.new(10000, 1, 10000)
-						part.Transparency = 1 - Color.Opacity
-						part.Material = Enum.Material[Material.Value]
-						part.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
-						part.Position = Vector3.new(0, pos - 2, 0)
-						part.CanCollide = Mode.Value == 'Collide'
-						part.Anchored = true
-						part.CanQuery = false
-						part.Parent = workspace
-						AntiFall:Clean(part)
+					waterRegionCFrame = CFrame.new(0, pos - 2, 0)
 
-						AntiFall:Clean(part.Touched:Connect(function(touched)
+					-- Handle Water Mode
+					if WaterToggle.Enabled then
+						terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Water)
+					else
+						local AntiFallPart = Instance.new('Part')
+						AntiFallPart.Size = Vector3.new(10000, 1, 10000)
+						AntiFallPart.Transparency = 1 - Color.Opacity
+						AntiFallPart.Material = Enum.Material[Material.Value]
+						AntiFallPart.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+						AntiFallPart.Position = Vector3.new(0, pos - 2, 0)
+						AntiFallPart.CanCollide = Mode.Value == 'Collide'
+						AntiFallPart.Anchored = true
+						AntiFallPart.CanQuery = false
+						AntiFallPart.Parent = workspace
+						AntiFall:Clean(AntiFallPart)
+						AntiFall:Clean(AntiFallPart.Touched:Connect(function(touched)
 							if touched.Parent == lplr.Character and entitylib.isAlive and debounce < tick() then
 								debounce = tick() + 0.1
 								if Mode.Value == 'Normal' then
@@ -1750,21 +1782,20 @@ run(function()
 				end
 			else
 				AntiFallDirection = nil
-				clearPreviousWater()
+				-- Clear water if used
+				if WaterToggle.Enabled and waterRegionCFrame then
+					terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
+				end
 			end
 		end,
-		Tooltip = 'Prevents falling into the void.\nUse optional water mode for swimming behavior.'
+		Tooltip = 'Prevents falling into the void. Supports Water fallback when toggled.'
 	})
 
 	Mode = AntiFall:CreateDropdown({
 		Name = 'Move Mode',
 		List = {'Normal', 'Collide', 'Velocity'},
-		Function = function(val)
-			if AntiFallPart then
-				AntiFallPart.CanCollide = val == 'Collide'
-			end
-		end,
-		Tooltip = 'Normal: Moves to ground\nVelocity: Boost upward\nCollide: Lets you walk on block'
+		Function = function(val) end,
+		Tooltip = 'Normal - Smooth teleport\nVelocity - Launch up\nCollide - Walk on fallback part'
 	})
 
 	local materials = {'ForceField'}
@@ -1777,74 +1808,25 @@ run(function()
 	Material = AntiFall:CreateDropdown({
 		Name = 'Material',
 		List = materials,
-		Function = function(val)
-			if AntiFallPart then
-				AntiFallPart.Material = Enum.Material[val]
-			end
-		end
+		Function = function(val) end
 	})
 
 	Color = AntiFall:CreateColorSlider({
 		Name = 'Color',
 		DefaultOpacity = 0.5,
-		Function = function(h, s, v, o)
-			if AntiFallPart then
-				AntiFallPart.Color = Color3.fromHSV(h, s, v)
-				AntiFallPart.Transparency = 1 - o
-			end
-		end
+		Function = function(h, s, v, o) end
 	})
 
-	UseWater = AntiFall:CreateToggle({
+	WaterToggle = AntiFall:CreateToggle({
 		Name = "Water Mode",
-		Function = function() end,
 		Default = false,
-		Tooltip = "Enables real swimming water below the map instead of a part"
+		Function = function(val)
+			if not val and waterRegionCFrame then
+				workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
+			end
+		end,
+		Tooltip = "Replaces AntiFall platform with swimmable water. Disabling clears the water."
 	})
-end)
-															
-run(function()
-    local connection
-
-    FlaglessHighjump = vape.Categories.Blatant:CreateModule({
-        Name = 'FlaglessHighjump',
-        Function = function(callback)
-            local player = game:GetService("Players").LocalPlayer
-            local defaultJumpPower = 50
-
-            local function applyHighJump()
-                local character = player.Character or player.CharacterAdded:Wait()
-                local humanoid = character:WaitForChild("Humanoid")
-                humanoid.UseJumpPower = true
-                humanoid.JumpPower = 205
-            end
-
-            local function resetJump()
-                local character = player.Character
-                if character then
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.JumpPower = defaultJumpPower
-                    end
-                end
-            end
-
-            if callback then
-                applyHighJump()
-                connection = player.CharacterAdded:Connect(function()
-                    task.wait(0.1)
-                    applyHighJump()
-                end)
-            else
-                if connection then
-                    connection:Disconnect()
-                    connection = nil
-                end
-                resetJump()
-            end
-        end,
-        Tooltip = 'Bedwars has the worst AC LOL'
-    })
 end)
 																
 run(function()
