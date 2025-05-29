@@ -3029,7 +3029,35 @@ run(function()
         Tooltip = "Client Sided"
     })
 end)
-																																
+
+run(function()
+    local conn
+
+    SwordTexture = vape.Categories.Utitlity:CreateModule({
+        Name = 'SwordTexture',
+        Function = function(callback)
+            if callback then
+                conn = workspace.CurrentCamera.Viewmodel.ChildAdded:Connect(function(x)
+                    if x and x:FindFirstChild("Handle") then
+                        if string.find(x.Name:lower(), 'sword') then
+                            x.Handle.Material = Enum.Material.ForceField
+                            x.Handle.MeshId = "rbxassetid://13471207377"
+                            x.Handle.BrickColor = BrickColor.new("Hot pink")
+                        end
+                    end
+                end)
+            else
+                if conn then
+                    conn:Disconnect()
+                    conn = nil
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = ""
+    })
+end)
+																																		
 run(function()
 	local Mode
 	local Expand
