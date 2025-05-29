@@ -3033,8 +3033,8 @@ end)
 run(function()
     local conn
 
-    SwordTexture = vape.Categories.Utitlity:CreateModule({
-        Name = "SwordTexture" ,
+    PixelSword = vape.Categories.Utility:CreateModule({
+        Name = "PixelSword",
         Function = function(callback)
             if callback then
                 conn = workspace.CurrentCamera.Viewmodel.ChildAdded:Connect(function(x)
