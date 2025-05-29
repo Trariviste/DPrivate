@@ -2616,7 +2616,7 @@ run(function()
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
-            loaded.TimePosition = 0.1
+            loaded.TimePosition = 0.2
             loaded:AdjustSpeed(0)
 
             RunService.RenderStepped:Wait()
