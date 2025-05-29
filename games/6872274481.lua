@@ -2573,6 +2573,18 @@ run(function()
         loopConn = RunService.Heartbeat:Connect(function()
             if not invisibilityEnabled or not Character or not Humanoid or not RootPart then return end
 
+            -- Force character invisible every frame
+            for _, part in ipairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.LocalTransparencyModifier = 1
+                elseif part:IsA("Decal") then
+                    part.Transparency = 1
+                elseif part:IsA("LayerCollector") then
+                    part.Enabled = false
+                end
+            end
+
+            -- Position/animation spoof
             local oldcf = RootPart.CFrame
             local oldcamoffset = Humanoid.CameraOffset
             local newcf = RootPart.CFrame - Vector3.new(0, Humanoid.HipHeight + (RootPart.Size.Y / 2) - 1, 0)
@@ -2585,7 +2597,7 @@ run(function()
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
-            loaded.TimePosition = 0.1
+            loaded.TimePosition = 0.77
             loaded:AdjustSpeed(0)
 
             RunService.RenderStepped:Wait()
@@ -2617,7 +2629,7 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Reworked Invis with HRP and respawn handling"
+        Tooltip = "Invis stays enforced in a loop until disabled"
     })
 
     LocalPlayer.CharacterAdded:Connect(function()
