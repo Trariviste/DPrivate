@@ -1,3 +1,22 @@
+local TextChatService = game:GetService("TextChatService")
+local Players = game:GetService("Players")
+
+-- Custom tag and color
+local tag = "VAPE OWNER"
+local colorCode = "CC00CC" -- Dark purple
+
+TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+	local props = Instance.new("TextChatMessageProperties")
+
+	if message.TextSource then
+		-- Check if the message sender has UserId == 1
+		if message.TextSource.UserId == 8563463678 then
+			props.PrefixText = "<font color='#" .. colorCode .. "'>[" .. tag .. "]</font> " .. message.PrefixText
+		end
+	end
+
+	return props
+end
 local run = function(func)
 	func()
 end
