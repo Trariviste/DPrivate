@@ -2648,7 +2648,7 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Invis stays enforced in a loop until disabled"
+        Tooltip = ""
     })
 
     LocalPlayer.CharacterAdded:Connect(function()
