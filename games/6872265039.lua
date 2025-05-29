@@ -94,25 +94,31 @@ run(function()
     local loopConn
     local invisibilityEnabled = false
 
-    local function modifyHRP()
+    local function modifyHRP(onEnable)
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
-        hrp.Transparency = 0.3
-        hrp.Color = Color3.new(1, 1, 1)
-        hrp.Material = Enum.Material.Plastic
+
+        if onEnable then
+            hrp.Transparency = 0.3
+            hrp.Color = Color3.new(1, 1, 1)
+            hrp.Material = Enum.Material.Plastic
+        else
+            hrp.Transparency = 1
+        end
+
         hrp.CanCollide = true
         hrp.Anchored = false
     end
 
-    local function makeInvisible()
+    local function setCharacterVisibility(isVisible)
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.LocalTransparencyModifier = 1
+                part.LocalTransparencyModifier = isVisible and 0 or 1
             elseif part:IsA("Decal") then
-                part.Transparency = 1
+                part.Transparency = isVisible and 0 or 1
             elseif part:IsA("LayerCollector") then
-                part.Enabled = false
+                part.Enabled = isVisible
             end
         end
     end
@@ -141,7 +147,7 @@ run(function()
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
-            loaded.TimePosition = 0.77
+            loaded.TimePosition = 0.2
             loaded:AdjustSpeed(0)
 
             RunService.RenderStepped:Wait()
@@ -160,18 +166,20 @@ run(function()
 
             if callback then
                 vape:CreateNotification('Invisibility Enabled', 'You are now invisible.', 4)
-                modifyHRP()
-                makeInvisible()
+                modifyHRP(true)
+                setCharacterVisibility(false)
                 startLoop(character)
             else
                 if loopConn then
                     loopConn:Disconnect()
                     loopConn = nil
                 end
+                modifyHRP(false)
+                setCharacterVisibility(true)
             end
         end,
         Default = false,
-        Tooltip = "Reworked Invis with working toggle and respawn support"
+        Tooltip = "Reworked Invis with HRP and respawn handling"
     })
 
     LocalPlayer.CharacterAdded:Connect(function()
