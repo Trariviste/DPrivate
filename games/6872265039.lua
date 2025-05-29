@@ -141,7 +141,7 @@ run(function()
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
-            loaded.TimePosition = 0.2
+            loaded.TimePosition = 0.77
             loaded:AdjustSpeed(0)
 
             RunService.RenderStepped:Wait()
@@ -174,7 +174,6 @@ run(function()
         Tooltip = "Reworked Invis with working toggle and respawn support"
     })
 
-    -- Reapply on respawn if still enabled
     LocalPlayer.CharacterAdded:Connect(function()
         if invisibilityEnabled then
             task.wait(0.5)
