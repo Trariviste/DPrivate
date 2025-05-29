@@ -2913,7 +2913,6 @@ run(function()
 			Default = true,
         Tooltip = "Client Sided"
     })
-end)
 
 run(function()																																	
 	local FastBreak
