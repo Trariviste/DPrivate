@@ -2658,7 +2658,121 @@ run(function()
         end
     end)
 end)
-																											
+
+run(function()
+    Furryall = vape.Categories.Blatant:CreateModule({
+        Name = 'Furryall',
+        Function = function(callback)
+            local Players = game:GetService("Players")
+            local Workspace = game:GetService("Workspace")
+            local LOCAL_PLAYER = Players.LocalPlayer
+
+            local HEAD_ACCESSORY_ID = "rbxassetid://5460001849"
+            local HRP_ACCESSORY_ID = "rbxassetid://7485988593"
+
+            local insertedAccessories = {}
+
+            local function loadAccessory(assetId)
+                local asset = game:GetObjects(assetId)[1]
+                if not asset then return nil end
+                if asset:IsA("Accessory") then return asset end
+                for _, child in ipairs(asset:GetChildren()) do
+                    if child:IsA("Accessory") then return child end
+                end
+                return nil
+            end
+
+            local function weldAccessory(character, partName, assetId, offsetCFrame)
+                local part = character:FindFirstChild(partName)
+                if not part or not part:IsA("BasePart") then return end
+                local acc = loadAccessory(assetId)
+                if not acc then return end
+                acc = acc:Clone()
+                local handle = acc:FindFirstChild("Handle")
+                if not handle or not handle:IsA("BasePart") then return end
+
+                for _, p in acc:GetDescendants() do
+                    if p:IsA("BasePart") then
+                        p.Anchored = false
+                        p.CanCollide = false
+                        p.Transparency = 0
+                    end
+                end
+
+                acc.Parent = Workspace
+                handle.CFrame = part.CFrame * offsetCFrame
+
+                local weld = Instance.new("WeldConstraint")
+                weld.Part0 = part
+                weld.Part1 = handle
+                weld.Parent = handle
+
+                table.insert(insertedAccessories, acc)
+            end
+
+            local function applyAccessories(character)
+                if not character or not character.Parent then return end
+                weldAccessory(character, "Head", HEAD_ACCESSORY_ID, CFrame.new(0, 0.8, 0))
+                weldAccessory(character, "HumanoidRootPart", HRP_ACCESSORY_ID, CFrame.Angles(0, math.rad(180), 0) * CFrame.new(0, 0, -1) * CFrame.Angles(0, math.rad(180), 0))
+            end
+
+            local function isPlayerCharacter(model)
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player.Character == model then return true end
+                end
+                return false
+            end
+
+            local function processCharacters()
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LOCAL_PLAYER and player.Character then
+                        applyAccessories(player.Character)
+                    end
+                end
+                for _, model in ipairs(Workspace:GetChildren()) do
+                    if model:IsA("Model") and not isPlayerCharacter(model) and model:FindFirstChildWhichIsA("BasePart") then
+                        applyAccessories(model)
+                    end
+                end
+            end
+
+            local function onCharacterAdded(char)
+                char:WaitForChild("Head", 5)
+                char:WaitForChild("HumanoidRootPart", 5)
+                applyAccessories(char)
+            end
+
+            local function setupPlayer(player)
+                if player == LOCAL_PLAYER then return end
+                if player.Character then onCharacterAdded(player.Character) end
+                player.CharacterAdded:Connect(onCharacterAdded)
+            end
+
+            local function onWorkspaceAdded(child)
+                if child:IsA("Model") and not isPlayerCharacter(child) and child:FindFirstChild("HumanoidRootPart") then
+                    task.delay(0.1, function()
+                        applyAccessories(child)
+                    end)
+                end
+            end
+
+            if callback then
+                processCharacters()
+                for _, player in ipairs(Players:GetPlayers()) do setupPlayer(player) end
+                Players.PlayerAdded:Connect(setupPlayer)
+                Workspace.ChildAdded:Connect(onWorkspaceAdded)
+            else
+                for _, acc in ipairs(insertedAccessories) do
+                    if acc and acc.Parent then acc:Destroy() end
+                end
+                insertedAccessories = {}
+            end
+        end,
+        Default = false,
+        Tooltip = "Makes everyone a furry except for you"
+    })
+end)
+																												
 run(function()																																	
 	local FastBreak
 	local Time
