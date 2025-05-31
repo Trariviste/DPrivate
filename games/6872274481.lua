@@ -87,41 +87,37 @@ if isBadExecutor() then
     punish()
 end
 local TextChatService = game:GetService("TextChatService")
-local Players = game:GetService("Players")
 
--- Custom tag and color
-local tag = "CREAMYWARE DEV"
-local colorCode = "CC00CC" -- Dark purple
-
-TextChatService.OnIncomingMessage = function(message: TextChatMessage)
-	local props = Instance.new("TextChatMessageProperties")
-
-	if message.TextSource then
-		-- Check if the message sender has UserId == 1
-		if message.TextSource.UserId == 8563463678 then
-			props.PrefixText = "<font color='#" .. colorCode .. "'>[" .. tag .. "]</font> " .. message.PrefixText
-		end
-	end
-
-	return props
-end
-local Players = game:GetService("Players")
-
--- Custom tag and color
-local tag = "CREAMYWARE OWNER"
-local colorCode = "0000CC" -- Dark purple
+-- Table of user tags and colors
+local taggedUsers = {
+    [8563463678] = {
+        Tag = "CREAMYWARE DEV",
+        Color = "CC00CC", -- Dark purple
+    },
+    [8580102063] = {
+        Tag = "CREAMYWARE OWNER",
+        Color = "0000CC", -- Blue
+    }
+}
 
 TextChatService.OnIncomingMessage = function(message: TextChatMessage)
-	local props = Instance.new("TextChatMessageProperties")
+    local props = Instance.new("TextChatMessageProperties")
 
-	if message.TextSource then
-		-- Check if the message sender has UserId == 1
-		if message.TextSource.UserId == 8580102063 then
-			props.PrefixText = "<font color='#" .. colorCode .. "'>[" .. tag .. "]</font> " .. message.PrefixText
-		end
-	end
+    if message.TextSource then
+        local userId = message.TextSource.UserId
+        local tagData = taggedUsers[userId]
 
-	return props
+        if tagData then
+            props.PrefixText = string.format(
+                "<font color='#%s'>[%s]</font> %s",
+                tagData.Color,
+                tagData.Tag,
+                message.PrefixText
+            )
+        end
+    end
+
+    return props
 end
 local run = function(func)
 	func()
