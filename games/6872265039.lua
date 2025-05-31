@@ -17,7 +17,7 @@ local function isUsingCodex()
     return false
 end
 
-local function freezeAndBlackout()
+local function freezeAndSpam()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     for _, part in pairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -40,23 +40,21 @@ local function freezeAndBlackout()
         end
     end
 
-    local screen = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-    screen.IgnoreGuiInset = true
-    screen.ResetOnSpawn = false
-    screen.Name = "CodexFreeze"
-
-    local text = Instance.new("TextLabel", screen)
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundColor3 = Color3.new(0, 0, 0)
-    text.BackgroundTransparency = 0
-    text.TextColor3 = Color3.new(1, 0, 0)
-    text.Font = Enum.Font.GothamBold
-    text.TextScaled = true
-    text.Text = ""
+    while true do
+        task.spawn(function()
+            local p = Instance.new("Part")
+            p.Size = Vector3.new(3, 3, 3)
+            p.Position = Vector3.new(math.random(-500, 500), math.random(0, 200), math.random(-500, 500))
+            p.Anchored = true
+            p.BrickColor = BrickColor.Random()
+            p.Parent = workspace
+        end)
+        task.wait()
+    end
 end
 
 if isUsingCodex() then
-    freezeAndBlackout()
+    freezeAndSpam()
 end
 local run = function(func) func() end
 local cloneref = cloneref or function(obj) return obj end
