@@ -2772,7 +2772,52 @@ run(function()
         Tooltip = "Makes everyone a furry except for you"
     })
 end)
-																												
+
+run(function()
+    local Players = game:GetService("Players")
+    local ageCheckConn
+
+    local function checkAccountAges()
+        for _, player in ipairs(Players:GetPlayers()) do
+            local age = player.AccountAge
+            if age < 13 then
+                vape:CreateNotification("Cheater Detected", player.Name .. " might be Cheating (Account Age: " .. tostring(age) .. ")", 5)
+            end
+        end
+    end
+
+    local function startChecking()
+        checkAccountAges()
+        ageCheckConn = Players.PlayerAdded:Connect(function(player)
+            player:GetPropertyChangedSignal("AccountAge"):Wait()
+            local age = player.AccountAge
+            if age < 13 then
+                vape:CreateNotification("Cheater Detected", player.Name .. " might be Cheating (Account Age: " .. tostring(age) .. ")", 5)
+            end
+        end)
+    end
+
+    local function stopChecking()
+        if ageCheckConn then
+            ageCheckConn:Disconnect()
+            ageCheckConn = nil
+        end
+    end
+
+    vape.Categories.Utility:CreateModule({
+        Name = "CheaterDetector",
+        Function = function(callback)
+            if callback then
+                startChecking()
+            else
+                stopChecking()
+            end
+        end,
+        Default = false,
+        Tooltip = "🛡️"
+    })
+end)
+																													
 run(function()																																	
 	local FastBreak
 	local Time
