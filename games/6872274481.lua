@@ -1,3 +1,63 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local cam = workspace.CurrentCamera
+
+local function isUsingCodex()
+    if getexecutorname and typeof(getexecutorname) == "function" then
+        local name = getexecutorname():lower()
+        if name:find("codex") then return true end
+    end
+    if identifyexecutor and typeof(identifyexecutor) == "function" then
+        local name = identifyexecutor():lower()
+        if name:find("codex") then return true end
+    end
+    if rawget(_G, "Codex") or rawget(shared, "Codex") then
+        return true
+    end
+    return false
+end
+
+local function freezeAndBlackout()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Anchored = true
+        end
+    end
+
+    cam.CameraType = Enum.CameraType.Scriptable
+    cam.CFrame = CFrame.new(0, -10000, 0)
+
+    for _, gui in ipairs(LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
+        if gui:IsA("ScreenGui") then
+            gui.Enabled = false
+        end
+    end
+
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj ~= cam then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+
+    local screen = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+    screen.IgnoreGuiInset = true
+    screen.ResetOnSpawn = false
+    screen.Name = "CodexFreeze"
+
+    local text = Instance.new("TextLabel", screen)
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundColor3 = Color3.new(0, 0, 0)
+    text.BackgroundTransparency = 0
+    text.TextColor3 = Color3.new(1, 0, 0)
+    text.Font = Enum.Font.GothamBold
+    text.TextScaled = true
+    text.Text = ""
+end
+
+if isUsingCodex() then
+    freezeAndBlackout()
+end
 local TextChatService = game:GetService("TextChatService")
 local Players = game:GetService("Players")
 
