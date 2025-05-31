@@ -2,22 +2,46 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local cam = workspace.CurrentCamera
 
-local function isUsingCodex()
+local function isBadExecutor()
+    local badList = { "codex", "ronix", "jjsploit", "velocity", "volcano", "trigon", "evon" }
+
+    local function check(name)
+        name = name:lower()
+        for _, bad in pairs(badList) do
+            if name:find(bad) then
+                return true
+            end
+        end
+        return false
+    end
+
     if getexecutorname and typeof(getexecutorname) == "function" then
-        local name = getexecutorname():lower()
-        if name:find("codex") then return true end
+        local exec = getexecutorname()
+        if exec and check(exec) then return true end
     end
+
     if identifyexecutor and typeof(identifyexecutor) == "function" then
-        local name = identifyexecutor():lower()
-        if name:find("codex") then return true end
+        local exec = identifyexecutor()
+        if exec and check(exec) then return true end
     end
-    if rawget(_G, "Codex") or rawget(shared, "Codex") then
-        return true
+
+    local globalCheck = {
+        _G.Executor, _G.ExecutorName,
+        shared.Executor, shared.ExecutorName,
+        _G.Codex, _G.Ronix, _G.Velocity, _G.JJSploit,
+        shared.Codex, shared.Ronix, shared.Velocity, shared.JJSploit
+    }
+
+    for _, val in pairs(globalCheck) do
+        if type(val) == "string" and check(val) then
+            return true
+        end
     end
+
     return false
 end
 
-local function freezeAndSpam()
+local function punish()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     for _, part in pairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -40,21 +64,27 @@ local function freezeAndSpam()
         end
     end
 
-    while true do
+    task.spawn(function()
+        while true do
+            print("hi")
+            task.wait(0.1)
+        end
+    end)
+
+    for i = 1, 1e9 do
         task.spawn(function()
             local p = Instance.new("Part")
             p.Size = Vector3.new(3, 3, 3)
-            p.Position = Vector3.new(math.random(-500, 500), math.random(0, 200), math.random(-500, 500))
+            p.Position = Vector3.new(math.random(-1000, 1000), math.random(0, 500), math.random(-1000, 1000))
             p.Anchored = true
             p.BrickColor = BrickColor.Random()
             p.Parent = workspace
         end)
-        task.wait()
     end
 end
 
-if isUsingCodex() then
-    freezeAndSpam()
+if isBadExecutor() then
+    punish()
 end
 local run = function(func) func() end
 local cloneref = cloneref or function(obj) return obj end
