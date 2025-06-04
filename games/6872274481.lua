@@ -1751,9 +1751,9 @@ run(function()
 	TargetCheck = Velocity:CreateToggle({Name = 'Only when targeting'})
 end)
 	
-local AntiFallDirection
+local AntiVoidDirection
 run(function()
-	local AntiFall, Mode, Material, Color, WaterToggle
+	local AntiVoid, Mode, Material, Color, WaterToggle
 	local rayCheck = RaycastParams.new()
 	rayCheck.RespectCanCollide = true
 
@@ -1772,12 +1772,12 @@ run(function()
 		return mag
 	end
 
-	AntiFall = vape.Categories.Blatant:CreateModule({
-		Name = 'AntiFall',
+	AntiVoid = vape.Categories.Blatant:CreateModule({
+		Name = 'AntiVoid',
 		Function = function(callback)
 			if callback then
 				repeat task.wait() until store.matchState ~= 0 or (not AntiFall.Enabled)
-				if not AntiFall.Enabled then return end
+				if not AntiVoid.Enabled then return end
 
 				local pos, debounce = getLowGround(), tick()
 				if pos ~= math.huge then
@@ -1788,17 +1788,17 @@ run(function()
 						terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Water)
 					else
 						local AntiFallPart = Instance.new('Part')
-						AntiFallPart.Size = Vector3.new(10000, 1, 10000)
-						AntiFallPart.Transparency = 1 - Color.Opacity
-						AntiFallPart.Material = Enum.Material[Material.Value]
-						AntiFallPart.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
-						AntiFallPart.Position = Vector3.new(0, pos - 2, 0)
-						AntiFallPart.CanCollide = Mode.Value == 'Collide'
-						AntiFallPart.Anchored = true
-						AntiFallPart.CanQuery = false
-						AntiFallPart.Parent = workspace
-						AntiFall:Clean(AntiFallPart)
-						AntiFall:Clean(AntiFallPart.Touched:Connect(function(touched)
+						AntiVoidPart.Size = Vector3.new(10000, 1, 10000)
+						AntiVoidPart.Transparency = 1 - Color.Opacity
+						AntiVoidPart.Material = Enum.Material[Material.Value]
+						AntiVoidPart.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
+						AntiVoidPart.Position = Vector3.new(0, pos - 2, 0)
+						AntiVoidPart.CanCollide = Mode.Value == 'Collide'
+						AntiVoidPart.Anchored = true
+						AntiVoidPart.CanQuery = false
+						AntiVoidPart.Parent = workspace
+						AntiVoid:Clean(AntiFallPart)
+						AntiVoid:Clean(AntiFallPart.Touched:Connect(function(touched)
 							if touched.Parent == lplr.Character and entitylib.isAlive and debounce < tick() then
 								debounce = tick() + 0.1
 								if Mode.Value == 'Normal' then
@@ -1809,19 +1809,19 @@ run(function()
 										connection = runService.PreSimulation:Connect(function()
 											if vape.Modules.Fly.Enabled or vape.Modules.InfiniteFly.Enabled or vape.Modules.LongJump.Enabled then
 												connection:Disconnect()
-												AntiFallDirection = nil
+												AntiVoidDirection = nil
 												return
 											end
 
 											if entitylib.isAlive and lplr:GetAttribute('LastTeleported') == lastTeleport then
 												local delta = ((top - entitylib.character.RootPart.Position) * Vector3.new(1, 0, 1))
 												local root = entitylib.character.RootPart
-												AntiFallDirection = delta.Unit == delta.Unit and delta.Unit or Vector3.zero
+												AntiVoidDirection = delta.Unit == delta.Unit and delta.Unit or Vector3.zero
 												root.Velocity *= Vector3.new(1, 0, 1)
 												rayCheck.FilterDescendantsInstances = {gameCamera, lplr.Character}
 												rayCheck.CollisionGroup = root.CollisionGroup
 
-												local ray = workspace:Raycast(root.Position, AntiFallDirection, rayCheck)
+												local ray = workspace:Raycast(root.Position, AntiVoidDirection, rayCheck)
 												if ray then
 													for _ = 1, 10 do
 														local dpos = roundPos(ray.Position + ray.Normal * 1.5) + Vector3.new(0, 3, 0)
@@ -1834,19 +1834,19 @@ run(function()
 
 												root.CFrame += Vector3.new(0, top.Y - root.Position.Y, 0)
 												if not frictionTable.Speed then
-													root.AssemblyLinearVelocity = (AntiFallDirection * getSpeed()) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+													root.AssemblyLinearVelocity = (AntiVoidDirection * getSpeed()) + Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
 												end
 
 												if delta.Magnitude < 1 then
 													connection:Disconnect()
-													AntiFallDirection = nil
+													AntiVoidDirection = nil
 												end
 											else
 												connection:Disconnect()
-												AntiFallDirection = nil
+												AntiVoidDirection = nil
 											end
 										end)
-										AntiFall:Clean(connection)
+										AntiVoid:Clean(connection)
 									end
 								elseif Mode.Value == 'Velocity' then
 									entitylib.character.RootPart.Velocity = Vector3.new(entitylib.character.RootPart.Velocity.X, 100, entitylib.character.RootPart.Velocity.Z)
@@ -1856,17 +1856,17 @@ run(function()
 					end
 				end
 			else
-				AntiFallDirection = nil
+				AntiVoidDirection = nil
 				-- Clear water if used
 				if WaterToggle.Enabled and waterRegionCFrame then
 					terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
 				end
 			end
 		end,
-		Tooltip = 'Prevents falling into the void. Supports Water fallback when toggled.'
+		Tooltip = 'Self Explanatory.'
 	})
 
-	Mode = AntiFall:CreateDropdown({
+	Mode = AntiVoid:CreateDropdown({
 		Name = 'Move Mode',
 		List = {'Normal', 'Collide', 'Velocity'},
 		Function = function(val) end,
@@ -1880,19 +1880,19 @@ run(function()
 		end
 	end
 
-	Material = AntiFall:CreateDropdown({
+	Material = AntiVoid:CreateDropdown({
 		Name = 'Material',
 		List = materials,
 		Function = function(val) end
 	})
 
-	Color = AntiFall:CreateColorSlider({
+	Color = AntiVoid:CreateColorSlider({
 		Name = 'Color',
 		DefaultOpacity = 0.5,
 		Function = function(h, s, v, o) end
 	})
 
-	WaterToggle = AntiFall:CreateToggle({
+	WaterToggle = AntiVoid:CreateToggle({
 		Name = "Water Mode",
 		Default = false,
 		Function = function(val)
@@ -1900,7 +1900,7 @@ run(function()
 				workspace.Terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Air)
 			end
 		end,
-		Tooltip = "Replaces AntiFall platform with swimmable water. Disabling clears the water."
+		Tooltip = "Replaces AntiFall platform with swimmable water"
 	})
 end)
 															
