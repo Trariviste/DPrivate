@@ -1787,7 +1787,7 @@ run(function()
 					if WaterToggle.Enabled then
 						terrain:FillBlock(waterRegionCFrame, waterRegionSize, Enum.Material.Water)
 					else
-						local AntiFallPart = Instance.new('Part')
+						local AntiVoidPart = Instance.new('Part')
 						AntiVoidPart.Size = Vector3.new(10000, 1, 10000)
 						AntiVoidPart.Transparency = 1 - Color.Opacity
 						AntiVoidPart.Material = Enum.Material[Material.Value]
