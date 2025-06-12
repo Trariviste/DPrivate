@@ -2917,8 +2917,7 @@ run(function()
         "hacker",
         "hax",
         "hack",
-        "cheater"
-	"cheats"																														
+        "cheater"																														
     }
 
     local function containsKeyword(msg)
