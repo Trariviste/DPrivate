@@ -3020,6 +3020,7 @@ run(function()
                 bedwars.BlockBreakController.blockBreaker:setCooldown(0.3)
             end
         end,
+        Default = false,
         Tooltip = 'Decreases block hit cooldown'
     })
 
