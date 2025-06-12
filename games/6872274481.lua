@@ -3005,37 +3005,52 @@ run(function()
 end)
 
 run(function()
-    local damageboost = nil
-    local damageboostduration = nil
-    local damageboostmultiplier = nil
-    damageboost = vape.Categories.Blatant:CreateModule({
+    local damageboostduration
+    local damageboostmultiplier
+    local damageboostconnection
+
+    local damagedata = {Multi = 0, lastHit = 0}
+
+    local playersService = game:GetService("Players")
+    local lplr = playersService.LocalPlayer
+
+    local vapeEvents = shared.VapeEvents or {}
+
+    local damageboost = vape.Categories.Blatant:CreateModule({
         Name = 'Damage Boost',
         Tooltip = 'Makes you go faster whenever you take knockback.',
         Function = function(callback)
             if callback then
-                damageboost:Clean(vapeEvents.EntityDamageEvent.Event:Connect(function(damageTable)
+                damageboostconnection = vapeEvents.EntityDamageEvent.Event:Connect(function(damageTable)
                     local player = damageTable.entityInstance and playersService:GetPlayerFromCharacter(damageTable.entityInstance)
                     if player and player == lplr and (damageTable.knockbackMultiplier and damageTable.knockbackMultiplier.horizontal and damageTable.knockbackMultiplier.horizontal > 0 or playersService:GetPlayerFromCharacter(damageTable.fromEntity) ~= nil) and not vape.Modules['Long Jump'].Enabled then
-                        damagedata.Multi = damageboostmultiplier.Value --+ (damageTable.knockbackMultiplier.horizontal / 2)
+                        damagedata.Multi = damageboostmultiplier.Value
                         damagedata.lastHit = tick() + damageboostduration.Value
                     end
-                end))
+                end)
+            else
+                if damageboostconnection then
+                    damageboostconnection:Disconnect()
+                    damageboostconnection = nil
+                end
             end
         end
     })
+
     damageboostduration = damageboost:CreateSlider({
         Name = 'Duration',
         Min = 0,
         Max = 2,
         Decimal = 20,
-        Default = 0.4,
+        Default = 0.4
     })
+
     damageboostmultiplier = damageboost:CreateSlider({
         Name = 'Multiplier',
         Min = 0,
         Max = 2,
         Decimal = 20,
-        Default = 1.4,
+        Default = 1.4
     })
 end)
 																														
