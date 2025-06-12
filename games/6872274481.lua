@@ -2917,7 +2917,7 @@ run(function()
         "hacker",
         "hax",
         "hack",
-        "cheater"																														
+        "cheater"
     }
 
     local function containsKeyword(msg)
@@ -3000,10 +3000,10 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = 'Corrects someone when they say hack🔥'
+        Tooltip = "Corrects someone when they say hack🔥"
     })
 end)
-
+																													
 run(function()
     local FastBreak
     local Time
