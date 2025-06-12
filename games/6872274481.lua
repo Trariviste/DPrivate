@@ -3000,13 +3000,13 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Corrects someone when they say hack🔥"
+        Tooltip = 'Corrects someone when they say hack🔥'
     })
 end)
 																														run(function(																															
 run(function()																																	
-local FastBreak
-local Time
+        local FastBreak
+        local Time
 	
 	FastBreak = vape.Categories.Blatant:CreateModule({
 		Name = 'FastBreak',
