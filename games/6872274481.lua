@@ -2905,39 +2905,7 @@ run(function()
         Tooltip = "🛡️"
     })
 end)
-																																																											run(function(																															
-run(function()
-	local TexturePack
-	local Mode
-	local packs = {'FatCat', 'Simply', 'VioletsDreams', 'Enlightened', 'Onyx', 'Fury', 'Wichtiger', 'Makima', 'Marin-Kitsawaba', 'Prime', 'Vile', 'Devourer', 'Acidic', 'Moon4Real', 'Nebula'}
-	TexturePack = vape.Legit:CreateModule({
-		Name = 'Texture Pack',
-		Tooltip = 'Changes your items with new textures',
-		Function = function(callback: boolean)
-			if callback then
-				loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/TexturePacks/refs/heads/main/'..Mode.Value..'.lua'))()
-				repeat
-					for i, v in lplr.Character:GetDescendants() do
-						if v.Name:find('Sword') then
-							pcall(function() v.CanCollide = false end)
-						end
-					end
-					task.wait()
-				until (not TexturePack.Enabled)
-			else
-				pcall(function()
-					texturepack:Disconnect()
-					getgenv().texturepack = nil
-				end)
-			end
-		end
-	})
-	Mode = TexturePack:CreateDropdown({
-		Name = 'Pack',
-		List = packs
-	})
-end)
-																												
+																																																											run(function(																																																											
 local Fly
 local LongJump
 run(function()
