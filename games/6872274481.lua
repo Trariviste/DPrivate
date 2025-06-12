@@ -3003,47 +3003,6 @@ run(function()
         Tooltip = "Corrects someone when they say hack🔥"
     })
 end)
-
-run(function()
-    local modelIdBox
-
-    local ModelInserter = vape.Categories.Utility:CreateModule({
-        Name = 'ModelInserter',
-        Function = function(callback)
-            if callback then
-                local modelId = modelIdBox and modelIdBox.Text or "rbxassetid://104730529147585"
-                if not modelId:lower():find("rbxassetid://") then
-                    modelId = "rbxassetid://" .. modelId
-                end
-
-                local success, model = pcall(function()
-                    return game:GetObjects(modelId)[1]
-                end)
-
-                if success and model then
-                    model.Parent = game.Workspace
-
-                    local player = game.Players.LocalPlayer
-                    local character = player.Character
-                    if character and character:FindFirstChild("HumanoidRootPart") then
-                        model:MoveTo(character.HumanoidRootPart.Position)
-                    end
-                else
-                    warn("Failed to insert model:", model)
-                end
-            end
-        end,
-        Default = false,
-        Tooltip = "Lets you insert models"
-    })
-
-    modelIdBox = ModelInserter:CreateTextBox({
-        Name = "Model ID",
-        FocusLost = true,
-        Placeholder = "Enter Asset ID (e.g. 104730529147585)",
-        Default = "104730529147585"
-    })
-end)
 																														run(function(																															
 run(function()																																	
 	local FastBreak
