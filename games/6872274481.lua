@@ -3005,8 +3005,8 @@ run(function()
 end)
 																														run(function(																															
 run(function()																																	
-	local FastBreak
-	local Time
+local FastBreak
+local Time
 	
 	FastBreak = vape.Categories.Blatant:CreateModule({
 		Name = 'FastBreak',
