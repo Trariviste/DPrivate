@@ -3005,55 +3005,46 @@ run(function()
 end)
 
 run(function()
-    local damageboostduration
-    local damageboostmultiplier
-    local damageboostconnection
+    local modelIdBox
 
-    local damagedata = {Multi = 0, lastHit = 0}
-
-    local playersService = game:GetService("Players")
-    local lplr = playersService.LocalPlayer
-
-    local vapeEvents = shared.VapeEvents or {}
-
-    local damageboost = vape.Categories.Blatant:CreateModule({
-        Name = 'Damage Boost',
-        Tooltip = 'Makes you go faster whenever you take knockback.',
+    local ModelInserter = vape.Categories.Utility:CreateModule({
+        Name = 'ModelInserter',
         Function = function(callback)
             if callback then
-                damageboostconnection = vapeEvents.EntityDamageEvent.Event:Connect(function(damageTable)
-                    local player = damageTable.entityInstance and playersService:GetPlayerFromCharacter(damageTable.entityInstance)
-                    if player and player == lplr and (damageTable.knockbackMultiplier and damageTable.knockbackMultiplier.horizontal and damageTable.knockbackMultiplier.horizontal > 0 or playersService:GetPlayerFromCharacter(damageTable.fromEntity) ~= nil) and not vape.Modules['Long Jump'].Enabled then
-                        damagedata.Multi = damageboostmultiplier.Value
-                        damagedata.lastHit = tick() + damageboostduration.Value
-                    end
+                local modelId = modelIdBox and modelIdBox.Text or "rbxassetid://104730529147585"
+                if not modelId:lower():find("rbxassetid://") then
+                    modelId = "rbxassetid://" .. modelId
+                end
+
+                local success, model = pcall(function()
+                    return game:GetObjects(modelId)[1]
                 end)
-            else
-                if damageboostconnection then
-                    damageboostconnection:Disconnect()
-                    damageboostconnection = nil
+
+                if success and model then
+                    model.Parent = game.Workspace
+
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        model:MoveTo(character.HumanoidRootPart.Position)
+                    end
+                else
+                    warn("Failed to insert model:", model)
                 end
             end
-        end
+        end,
+        Default = false,
+        Tooltip = "Lets you insert models"
     })
 
-    damageboostduration = damageboost:CreateSlider({
-        Name = 'Duration',
-        Min = 0,
-        Max = 2,
-        Decimal = 20,
-        Default = 0.4
-    })
-
-    damageboostmultiplier = damageboost:CreateSlider({
-        Name = 'Multiplier',
-        Min = 0,
-        Max = 2,
-        Decimal = 20,
-        Default = 1.4
+    modelIdBox = ModelInserter:CreateTextBox({
+        Name = "Model ID",
+        FocusLost = true,
+        Placeholder = "Enter Asset ID (e.g. 104730529147585)",
+        Default = "104730529147585"
     })
 end)
-																														
+																														run(function(																															
 run(function()																																	
 	local FastBreak
 	local Time
