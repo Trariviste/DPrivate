@@ -2907,7 +2907,6 @@ run(function()
 end)
 																																																											run(function(																																																											
 local Fly
-local LongJump
 run(function()
 	local Value
 	local VerticalValue
