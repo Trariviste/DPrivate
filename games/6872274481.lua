@@ -1990,7 +1990,53 @@ run(function()
 		["Description"] = "TrainWhistleExploit"
 	})
 end)
-																								
+
+BedTP = vape.Categories.Blatant:CreateModule({
+        ["Name"] = "BedTP",
+        ["Function"] = function(callback)
+            if callback then
+				task.spawn(function()
+					repeat task.wait() until vape.Modules.Invisibility
+					repeat task.wait() until vape.Modules.GamingChair
+					if vape.Modules.Invisibility.Enabled and vape.Modules.GamingChair.Enabled then
+						CreateNotification("BedTP", "Please turn off the Invisibility and GamingChair module!", 3)
+						BedTP:Toggle()
+						return
+					end
+					if vape.Modules.Invisibility.Enabled then
+						CreateNotification("BedTP", "Please turn off the Invisibility module!", 3)
+						BedTP:Toggle()
+						return
+					end
+					if vape.Modules.GamingChair.Enabled then
+						CreateNotification("BedTP", "Please turn off the GamingChair module!", 3)
+						BedTP:Toggle()
+						return
+					end
+					BedTP:Clean(lplr.CharacterAdded:Connect(function(char)
+						if tppos2 then 
+							task.spawn(function()
+								local root = char:WaitForChild("HumanoidRootPart", 9000000000)
+								if root and tppos2 then 
+									teleportWithTween(char, tppos2)
+									tppos2 = nil
+								end
+							end)
+						end
+					end))
+					local bed = getEnemyBed()
+					if bed then 
+						tppos2 = bed.Position
+						killPlayer(lplr)
+					else
+						BedTP:Toggle(false)
+					end
+				end)
+            end
+        end
+    })
+end)
+													
 run(function()
   local texturepack = {Enabled = false}
   local packDropdown = {Value = "Melo Pack"}
