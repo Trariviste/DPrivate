@@ -1934,7 +1934,510 @@ run(function()
         Tooltip = 'Bedwars has the worst AC LOL'
     })
 end)
-																
+
+run(function()
+	local InfernalKill = {Enabled = false}
+	InfernalKill = vape.Categories.Utility:CreateModule({
+		["Name"] = "EmberExploit",
+		["Function"] = function(callback)
+			if callback then
+				repeat
+					wait()
+					local tmp = getItem("infernal_saber")
+					if tmp then
+						bedwars.Client:Get('HellBladeRelease'):SendToServer({
+							weapon = tmp.tool;
+							player = game:GetService("Players").LocalPlayer;
+							chargeTime = 0.9;
+						})
+					end
+				until not InfernalKill["Enabled"]
+			end
+		end,
+		["Description"] = "Ember Exploit"
+	})
+end)
+run(function()
+	local SkyScytheKill = {Enabled = false}
+	SkyScytheKill = vape.Categories.Utility:CreateModule({
+		["Name"] = "SkyScytheExploit",
+		["Function"] = function(callback)
+			if callback then
+				repeat
+					wait()
+					if getItem("sky_scythe") then
+						bedwars.Client:Get('SkyScytheSpin'):SendToServer()
+					end
+				until not SkyScytheKill["Enabled"]
+			end
+		end,
+		["Description"] = "SkyScytheExploit"
+	})
+end)
+run(function()
+	local TrainWhistleExploit = {Enabled = false}
+	TrainWhistleExploit = vape.Categories.Utility:CreateModule({
+		["Name"] = "TrainWhistleExploit",
+		["Function"] = function(callback)
+			if callback then
+				repeat
+					wait()
+					bedwars.AbilityController:useAbility('TRAIN_WHISTLE')
+				until not TrainWhistleExploit["Enabled"]
+			end
+		end,
+		["Description"] = "TrainWhistleExploit"
+	})
+end)
+run(function()
+	local DamageIndicator = {}
+	local DamageIndicatorColorToggle = {}
+	local DamageIndicatorColor = {Hue = 0, Sat = 0, Value = 0}
+	local DamageIndicatorTextToggle = {}
+	local DamageIndicatorText = {ListEnabled = {}}
+	local DamageIndicatorFontToggle = {}
+	local DamageIndicatorFont = {Value = 'GothamBlack'}
+	local DamageIndicatorTextObjects = {}
+    local DamageIndicatorMode1
+    local DamageMessages = {
+		'E',
+		'Pop!',
+		'Hit!',
+		'Smack!',
+		'Bang!',
+		'Boom!',
+		'Whoop!',
+		'Cw Better',
+		'-9e9!',
+		'Whack!',
+		'Crash!',
+		'Slam!',
+		'Zap!',
+		'CreamyWare!',
+		'CreamyWare On Top!'
+	}
+	local RGBColors = {
+		Color3.fromRGB(255, 0, 0),
+		Color3.fromRGB(255, 127, 0),
+		Color3.fromRGB(255, 255, 0),
+		Color3.fromRGB(0, 255, 0),
+		Color3.fromRGB(0, 0, 255),
+		Color3.fromRGB(75, 0, 130),
+		Color3.fromRGB(148, 0, 211)
+	}
+	local orgI, mz, vz = 1, 5, 10
+    local DamageIndicatorMode = {Value = 'Rainbow'}
+	local DamageIndicatorMode2 = {Value = 'Gradient'}
+	DamageIndicator = vape.Categories.Utility:CreateModule({
+        PerformanceModeBlacklisted = true,
+		Name = 'DamageIndicator',
+		Function = function(calling)
+			if calling then
+				task.spawn(function()
+					table.insert(DamageIndicator.Connections, workspace.DescendantAdded:Connect(function(v)
+						pcall(function()
+                            if v.Name ~= 'DamageIndicatorPart' then return end
+							local indicatorobj = v:FindFirstChildWhichIsA('BillboardGui'):FindFirstChildWhichIsA('Frame'):FindFirstChildWhichIsA('TextLabel')
+							if indicatorobj then
+                                if DamageIndicatorColorToggle.Enabled then
+                                    -- indicatorobj.TextColor3 = Color3.fromHSV(DamageIndicatorColor.Hue, DamageIndicatorColor.Sat, DamageIndicatorColor.Value)
+                                    if DamageIndicatorMode.Value == 'Rainbow' then
+                                        if DamageIndicatorMode2.Value == 'Gradient' then
+                                            indicatorobj.TextColor3 = Color3.fromHSV(tick() % mz / mz, orgI, orgI)
+                                        else
+                                            runService.Stepped:Connect(function()
+                                                orgI = (orgI % #RGBColors) + 1
+                                                indicatorobj.TextColor3 = RGBColors[orgI]
+                                            end)
+                                        end
+                                    elseif DamageIndicatorMode.Value == 'Custom' then
+                                        indicatorobj.TextColor3 = Color3.fromHSV(
+                                            DamageIndicatorColor.Hue, 
+                                            DamageIndicatorColor.Sat, 
+                                            DamageIndicatorColor.Value
+                                        )
+                                    else
+                                        indicatorobj.TextColor3 = Color3.fromRGB(127, 0, 255)
+                                    end
+                                end
+                                if DamageIndicatorTextToggle.Enabled then
+                                    if DamageIndicatorMode1.Value == 'Custom' then
+                                        print(getrandomvalue(DamageIndicatorText.ListEnabled))
+                                        local o = getrandomvalue(DamageIndicatorText.ListEnabled)
+                                        indicatorobj.Text = o ~= '' and o or indicatorobj.Text
+									elseif DamageIndicatorMode1.Value == 'Multiple' then
+										indicatorobj.Text = DamageMessages[math.random(orgI, #DamageMessages)]
+									else
+										indicatorobj.Text = 'Render Intents on top!'
+									end
+								end
+								indicatorobj.Font = DamageIndicatorFontToggle.Enabled and Enum.Font[DamageIndicatorFont.Value] or indicatorobject.Font
+							end
+						end)
+					end))
+				end)
+			end
+		end
+	})
+    DamageIndicatorMode = DamageIndicator:CreateDropdown({
+		Name = 'Color Mode',
+		List = {
+			'Rainbow',
+			'Custom',
+			'Lunar'
+		},
+		HoverText = 'Mode to color the Damage Indicator',
+		Value = 'Rainbow',
+		Function = function() end
+	})
+	DamageIndicatorMode2 = DamageIndicator:CreateDropdown({
+		Name = 'Rainbow Mode',
+		List = {
+			'Gradient',
+			'Paint'
+		},
+		HoverText = 'Mode to color the Damage Indicator\nwith Rainbow Color Mode',
+		Value = 'Gradient',
+		Function = function() end
+	})
+    DamageIndicatorMode1 = DamageIndicator:CreateDropdown({
+		Name = 'Text Mode',
+		List = {
+            'Custom',
+			'Multiple',
+			'Lunar'
+		},
+		HoverText = 'Mode to change the Damage Indicator Text',
+		Value = 'Custom',
+		Function = function() end
+	})
+	DamageIndicatorColorToggle = DamageIndicator:CreateToggle({
+		Name = 'Custom Color',
+		Function = function(calling) pcall(function() DamageIndicatorColor.Object.Visible = calling end) end
+	})
+	DamageIndicatorColor = DamageIndicator:CreateColorSlider({
+		Name = 'Text Color',
+		Function = function() end
+	})
+	DamageIndicatorTextToggle = DamageIndicator:CreateToggle({
+		Name = 'Custom Text',
+		HoverText = 'random messages for the indicator',
+		Function = function(calling) pcall(function() DamageIndicatorText.Object.Visible = calling end) end
+	})
+	DamageIndicatorText = DamageIndicator:CreateTextList({
+		Name = 'Text',
+		TempText = 'Indicator Text',
+		AddFunction = function() end
+	})
+	DamageIndicatorFontToggle = DamageIndicator:CreateToggle({
+		Name = 'Custom Font',
+		Function = function(calling) pcall(function() DamageIndicatorFont.Object.Visible = calling end) end
+	})
+	DamageIndicatorFont = DamageIndicator:CreateDropdown({
+		Name = 'Font',
+		List = GetEnumItems('Font'),
+		Function = function() end
+	})
+	DamageIndicatorColor.Object.Visible = DamageIndicatorColorToggle.Enabled
+	DamageIndicatorText.Object.Visible = DamageIndicatorTextToggle.Enabled
+	DamageIndicatorFont.Object.Visible = DamageIndicatorFontToggle.Enabled
+end)
+run(function()
+	local HealthbarVisuals = {};
+	local HealthbarRound = {};
+	local HealthbarColorToggle = {};
+	local HealthbarGradientToggle = {};
+	local HealthbarGradientColor = {};
+	local HealthbarHighlight = {};
+	local HealthbarHighlightColor = newcolor();
+	local HealthbarGradientRotation = {Value = 0};
+	local HealthbarTextToggle = {};
+	local HealthbarFontToggle = {};
+	local HealthbarTextColorToggle = {};
+	local HealthbarBackgroundToggle = {};
+	local HealthbarText = {ListEnabled = {}};
+	local HealthbarInvis = {Value = 0};
+	local HealthbarRoundSize = {Value = 4};
+	local HealthbarFont = {value = 'LuckiestGuy'};
+	local HealthbarColor = newcolor();
+	local HealthbarBackground = newcolor();
+	local HealthbarTextColor = newcolor();
+	local healthbarobjects = Performance.new();
+	local oldhealthbar;
+	local healthbarhighlight;
+	local textconnection;
+	local function healthbarFunction()
+		if not HealthbarVisuals.Enabled then 
+			return 
+		end
+		local healthbar = ({pcall(function() return lplr.PlayerGui.hotbar['1'].HotbarHealthbarContainer.HealthbarProgressWrapper['1'] end)})[2]
+		if healthbar and type(healthbar) == 'userdata' then 
+			oldhealthbar = healthbar;
+			healthbar.Transparency = (0.1 * HealthbarInvis.Value);
+			healthbar.BackgroundColor3 = (HealthbarColorToggle.Enabled and Color3.fromHSV(HealthbarColor.Hue, HealthbarColor.Sat, HealthbarColor.Value) or healthbar.BackgroundColor3)
+			if HealthbarGradientToggle.Enabled then 
+				healthbar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				local gradient = (healthbar:FindFirstChildWhichIsA('UIGradient') or Instance.new('UIGradient', healthbar))
+				gradient.Color = createSequence({0, Color3.fromHSV(HealthbarColor.Hue, HealthbarColor.Sat, HealthbarColor.Value), 1, Color3.fromHSV(HealthbarGradientColor.Hue, HealthbarGradientColor.Sat, HealthbarGradientColor.Value)})
+				gradient.Rotation = HealthbarGradientRotation.Value
+				table.insert(healthbarobjects, gradient)
+			end
+			for i,v in healthbar.Parent:GetChildren() do 
+				if v:IsA('Frame') and v:FindFirstChildWhichIsA('UICorner') == nil and HealthbarRound.Enabled then
+					local corner = Instance.new('UICorner', v);
+					corner.CornerRadius = UDim.new(0, HealthbarRoundSize.Value);
+					table.insert(healthbarobjects, corner)
+				end
+			end
+			local healthbarbackground = ({pcall(function() return healthbar.Parent.Parent end)})[2]
+			if healthbarbackground and type(healthbarbackground) == 'userdata' then
+				healthbar.Transparency = (0.1 * HealthbarInvis.Value);
+				if HealthbarHighlight.Enabled then 
+					local highlight = Instance.new('UIStroke', healthbarbackground);
+					highlight.Color = Color3.fromHSV(HealthbarHighlightColor.Hue, HealthbarHighlightColor.Sat, HealthbarHighlightColor.Value);
+					highlight.Thickness = 1.6; 
+					healthbarhighlight = highlight
+				end
+				if healthbar.Parent.Parent:FindFirstChildWhichIsA('UICorner') == nil and HealthbarRound.Enabled then 
+					local corner = Instance.new('UICorner', healthbar.Parent.Parent);
+					corner.CornerRadius = UDim.new(0, HealthbarRoundSize.Value);
+					table.insert(healthbarobjects, corner)
+				end 
+				if HealthbarBackgroundToggle.Enabled then
+					healthbarbackground.BackgroundColor3 = Color3.fromHSV(HealthbarBackground.Hue, HealthbarBackground.Sat, HealthbarBackground.Value)
+				end
+			end
+			local healthbartext = ({pcall(function() return healthbar.Parent.Parent['1'] end)})[2]
+			if healthbartext and type(healthbartext) == 'userdata' then 
+				local randomtext = getrandomvalue(HealthbarText.ListEnabled)
+				if HealthbarTextColorToggle.Enabled then
+					healthbartext.TextColor3 = Color3.fromHSV(HealthbarTextColor.Hue, HealthbarTextColor.Sat, HealthbarTextColor.Value)
+				end
+				if HealthbarFontToggle.Enabled then 
+					healthbartext.Font = Enum.Font[HealthbarFont.Value]
+				end
+				if randomtext ~= '' and HealthbarTextToggle.Enabled then 
+					healthbartext.Text = randomtext:gsub('<health>', isAlive(lplr, true) and tostring(math.round(lplr.Character:GetAttribute('Health') or 0)) or '0')
+				else
+					pcall(function() healthbartext.Text = tostring(lplr.Character:GetAttribute('Health')) end)
+				end
+				if not textconnection then 
+					textconnection = healthbartext:GetPropertyChangedSignal('Text'):Connect(function()
+						local randomtext = getrandomvalue(HealthbarText.ListEnabled)
+						if randomtext ~= '' then 
+							healthbartext.Text = randomtext:gsub('<health>', isAlive() and tostring(math.floor(lplr.Character:GetAttribute('Health') or 0)) or '0')
+						else
+							pcall(function() healthbartext.Text = tostring(math.floor(lplr.Character:GetAttribute('Health'))) end)
+						end
+					end)
+				end
+			end
+		end
+	end
+	HealthbarVisuals = vape.Categories.Utility:CreateModule({
+		Name = 'HealthbarVisuals',
+		Function = function(calling)
+			if calling then 
+				task.spawn(function()
+					table.insert(HealthbarVisuals.Connections, lplr.PlayerGui.DescendantAdded:Connect(function(v)
+						if v.Name == 'HotbarHealthbarContainer' and v.Parent and v.Parent.Parent and v.Parent.Parent.Name == 'hotbar' then
+							healthbarFunction()
+						end
+					end))
+					healthbarFunction()
+				end)
+			else
+				pcall(function() textconnection:Disconnect() end)
+				pcall(function() oldhealthbar.Parent.Parent.BackgroundColor3 = Color3.fromRGB(41, 51, 65) end)
+				pcall(function() oldhealthbar.BackgroundColor3 = Color3.fromRGB(203, 54, 36) end)
+				pcall(function() oldhealthbar.Parent.Parent['1'].Text = tostring(lplr.Character:GetAttribute('Health')) end)
+				pcall(function() oldhealthbar.Parent.Parent['1'].TextColor3 = Color3.fromRGB(255, 255, 255) end)
+				pcall(function() oldhealthbar.Parent.Parent['1'].Font = Enum.Font.LuckiestGuy end)
+				oldhealthbar = nil
+				textconnection = nil
+				for i,v in healthbarobjects do 
+					pcall(function() v:Destroy() end)
+				end
+				table.clear(healthbarobjects);
+				pcall(function() healthbarhighlight:Destroy() end);
+				healthbarhighlight = nil;
+			end
+		end
+	})
+	HealthbarColorToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Main Color',
+		Default = true,
+		Function = function(calling)
+			pcall(function() HealthbarColor.Object.Visible = calling end)
+			pcall(function() HealthbarGradientToggle.Object.Visible = calling end)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end 
+	})
+	HealthbarGradientToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Gradient',
+		Function = function(calling)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end
+	})
+	HealthbarColor = HealthbarVisuals:CreateColorSlider({
+		Name = 'Main Color',
+		Function = function()
+			task.spawn(healthbarFunction)
+		end
+	})
+	HealthbarGradientColor = HealthbarVisuals:CreateColorSlider({
+		Name = 'Secondary Color',
+		Function = function(calling)
+			if HealthbarGradientToggle.Enabled then 
+				task.spawn(healthbarFunction)
+			end
+		end
+	})
+	HealthbarBackgroundToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Background Color',
+		Function = function(calling)
+			pcall(function() HealthbarBackground.Object.Visible = calling end)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end 
+	})
+	HealthbarBackground = HealthbarVisuals:CreateColorSlider({
+		Name = 'Background Color',
+		Function = function() 
+			task.spawn(healthbarFunction)
+		end
+	})
+	HealthbarTextToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Text',
+		Function = function(calling)
+			pcall(function() HealthbarText.Object.Visible = calling end)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end 
+	})
+	HealthbarText = HealthbarVisuals:CreateTextList({
+		Name = 'Text',
+		TempText = 'Healthbar Text',
+		AddFunction = function()
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end,
+		RemoveFunction = function()
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end
+	})
+	HealthbarTextColorToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Text Color',
+		Function = function(calling)
+			pcall(function() HealthbarTextColor.Object.Visible = calling end)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end 
+	})
+	HealthbarTextColor = HealthbarVisuals:CreateColorSlider({
+		Name = 'Text Color',
+		Function = function() 
+			task.spawn(healthbarFunction)
+		end
+	})
+	HealthbarFontToggle = HealthbarVisuals:CreateToggle({
+		Name = 'Text Font',
+		Function = function(calling)
+			pcall(function() HealthbarFont.Object.Visible = calling end)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end 
+	})
+	HealthbarFont = HealthbarVisuals:CreateDropdown({
+		Name = 'Text Font',
+		List = GetEnumItems('Font'),
+		Function = function(calling)
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end
+	})
+	HealthbarRound = HealthbarVisuals:CreateToggle({
+		Name = 'Round',
+		Function = function(calling)
+			pcall(function() HealthbarRoundSize.Object.Visible = calling end);
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end
+	})
+	HealthbarRoundSize = HealthbarVisuals:CreateSlider({
+		Name = 'Corner Size',
+		Min = 1,
+		Max = 20,
+		Default = 5,
+		Function = function(value)
+			if HealthbarVisuals.Enabled then 
+				pcall(function() 
+					oldhealthbar.Parent:FindFirstChildOfClass('UICorner').CornerRadius = UDim.new(0, value);
+					oldhealthbar.Parent.Parent:FindFirstChildOfClass('UICorner').CornerRadius = UDim.new(0, value)  
+				end)
+			end
+		end
+	})
+	HealthbarHighlight = HealthbarVisuals:CreateToggle({
+		Name = 'Highlight',
+		Function = function(calling)
+			pcall(function() HealthbarHighlightColor.Object.Visible = calling end);
+			if HealthbarVisuals.Enabled then
+				HealthbarVisuals:Toggle()
+				HealthbarVisuals:Toggle()
+			end
+		end
+	})
+	HealthbarHighlightColor = HealthbarVisuals:CreateColorSlider({
+		Name = 'Highlight Color',
+		Function = function()
+			if HealthbarVisuals.Enabled then 
+				pcall(function() healthbarhighlight.Color = Color3.fromHSV(HealthbarHighlightColor.Hue, HealthbarHighlightColor.Sat, HealthbarHighlightColor.Value) end)
+			end
+		end
+	})
+	HealthbarInvis = HealthbarVisuals:CreateSlider({
+		Name = 'Invisibility',
+		Min = 0,
+		Max = 10,
+		Function = function(value)
+			pcall(function() 
+				oldhealthbar.Transparency = (0.1 * value);
+				oldhealthbar.Parent.Parent.Transparency = (0.1 * HealthbarInvis.Value); 
+			end)
+		end
+	})
+	HealthbarBackground.Object.Visible = false;
+	HealthbarText.Object.Visible = false;
+	HealthbarTextColor.Object.Visible = false;
+	HealthbarFont.Object.Visible = false;
+	HealthbarRoundSize.Object.Visible = false;
+	HealthbarHighlightColor.Object.Visible = false;
+end)
+															
 run(function()
     local inputService = game:GetService("UserInputService")
     local runService = game:GetService("RunService")
