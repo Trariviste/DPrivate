@@ -2143,6 +2143,7 @@ run(function()
 	DamageIndicatorText.Object.Visible = DamageIndicatorTextToggle.Enabled
 	DamageIndicatorFont.Object.Visible = DamageIndicatorFontToggle.Enabled
 end)
+																								
 run(function()
 	local HealthbarVisuals = {};
 	local HealthbarRound = {};
