@@ -3293,6 +3293,195 @@ run(function()
     })
 end)
 
+run(function()
+    FPSUnlocker = vape.Categories.Utility:CreateModule({
+        Name = 'FPSUnlocker',
+        Function = function(callback)
+            if callback then
+               		getgenv().fps = math.huge
+setfpscap = setfpscap or setfpscapfunc or set_fps_cap or syn and syn.set_fps_cap
+RunService = game:GetService("RunService")
+if setfpscap and RunService then
+    RunService.RenderStepped:Connect(function()
+        setfpscap(fps)
+    end)
+end
+        end,
+        Default = false,
+        Tooltip = "Sets your fps as high as possible using math.huge🤑"
+    })
+end)
+
+run(function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    Headless = vape.Categories.Utility:CreateModule({
+        Name = "Headless",
+        Function = function(enabled)
+            if enabled then
+                local function applyHeadlessToCharacter(character)
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.RigType == Enum.HumanoidRigType.R15 then
+                        local head = character:FindFirstChild("Head")
+                        if head then
+                            head.Transparency = 1
+                            local face = head:FindFirstChildWhichIsA("Decal")
+                            if face then
+                                face.Transparency = 1
+                            end
+                        end
+                    end
+                end
+
+                local currentChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                applyHeadlessToCharacter(currentChar)
+
+                Headless:Clean(LocalPlayer.CharacterAdded:Connect(function(char)
+                    if Headless.Enabled then
+                        task.wait(0.5)
+                        applyHeadlessToCharacter(char)
+                    end
+                end))
+            else
+                local char = LocalPlayer.Character
+                if char then
+                    local head = char:FindFirstChild("Head")
+                    if head then
+                        head.Transparency = 0
+                        local face = head:FindFirstChildWhichIsA("Decal")
+                        if face then
+                            face.Transparency = 0
+                        end
+                    end
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = "Useless as hell bruh💔"
+    })
+end)
+
+run(function()
+    local savedLightingSettings = {}
+    local savedEffects = {}
+    local savedParts = {}
+
+    FPSBoostPlus = vape.Categories.Utility:CreateModule({
+        Name = 'FPSBoostPlus',
+        Function = function(enabled)
+            local Players = game:GetService("Players")
+            local Workspace = game:GetService("Workspace")
+            local Lighting = game:GetService("Lighting")
+            local gray = Color3.fromRGB(90, 90, 90)
+
+            local function isPlayerCharacter(instance)
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player.Character and instance:IsDescendantOf(player.Character) then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            if enabled then
+                savedLightingSettings = {
+                    FogStart = Lighting.FogStart,
+                    FogEnd = Lighting.FogEnd,
+                    FogColor = Lighting.FogColor,
+                    GlobalShadows = Lighting.GlobalShadows,
+                    Brightness = Lighting.Brightness
+                }
+
+                for _, effect in ipairs(Lighting:GetChildren()) do
+                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                        savedEffects[effect] = effect.Enabled
+                        effect.Enabled = false
+                    end
+                end
+
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if not isPlayerCharacter(obj) then
+                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
+                            savedParts[obj] = {
+                                Material = obj.Material,
+                                Color = obj.Color,
+                                Reflectance = obj.Reflectance,
+                                TextureID = obj:IsA("MeshPart") and obj.TextureID or nil
+                            }
+                            obj.Material = Enum.Material.Air
+                            obj.Color = gray
+                            obj.Reflectance = 0
+                            if obj:IsA("MeshPart") then
+                                obj.TextureID = ""
+                            end
+                        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                            obj:Destroy()
+                        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                            obj.Lifetime = NumberRange.new(0)
+                        elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
+                            obj.Enabled = false
+                        end
+                    end
+                end
+
+                Lighting.FogStart = 1e10
+                Lighting.FogEnd = 1e10
+                Lighting.FogColor = Color3.new(1, 1, 1)
+                Lighting.GlobalShadows = false
+                Lighting.Brightness = 0
+            else
+                for obj, data in pairs(savedParts) do
+                    if obj and obj.Parent then
+                        obj.Material = data.Material
+                        obj.Color = data.Color
+                        obj.Reflectance = data.Reflectance
+                        if obj:IsA("MeshPart") and data.TextureID then
+                            obj.TextureID = data.TextureID
+                        end
+                    end
+                end
+
+                for effect, wasEnabled in pairs(savedEffects) do
+                    if effect and effect.Parent then
+                        effect.Enabled = wasEnabled
+                    end
+                end
+
+                Lighting.FogStart = savedLightingSettings.FogStart or 0
+                Lighting.FogEnd = savedLightingSettings.FogEnd or 100000
+                Lighting.FogColor = savedLightingSettings.FogColor or Color3.new(1, 1, 1)
+                Lighting.GlobalShadows = savedLightingSettings.GlobalShadows or true
+                Lighting.Brightness = savedLightingSettings.Brightness or 1
+            end
+        end,
+        Default = false,
+        Tooltip = "Remade from PisstonWare"
+    })
+end)
+
+run(function()
+    FirstPersonArm = vape.Categories.Utility:CreateModule({
+        Name = 'FirstPersonArm',
+        Function = function(callback)
+            local viewmodel = workspace:FindFirstChild("Camera") and workspace.Camera:FindFirstChild("Viewmodel")
+            if viewmodel then
+                local lowerArm = viewmodel:FindFirstChild("RightLowerArm")
+                local hand = viewmodel:FindFirstChild("RightHand")
+
+                if lowerArm and lowerArm:IsA("MeshPart") then
+                    lowerArm.Transparency = callback and 0 or 1
+                end
+
+                if hand and hand:IsA("MeshPart") then
+                    hand.Transparency = callback and 0 or 1
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = "Self Explanatory"
+    })
+end)																																	
 local AutoPlayAllow = nil
 local AutoWin = {Enabled = false}
 run(function()
