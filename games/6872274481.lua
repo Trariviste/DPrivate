@@ -3462,6 +3462,348 @@ run(function()
 end)
 
 run(function()
+	local PlayerLevelSet = {Enabled = false}
+	local PlayerLevel = {Value = 100}
+	PlayerLevelSet = vape.Categories.Utility:CreateModule({
+		Name = 'SetPlayerLevel',
+		Tooltip = 'Sets your player level to 100 (client sided)',
+		Function = function(calling)
+			if calling then 
+				errorNotification("SetPlayerLevel", "This is client sided (only u will see the new level)", 3)
+				game.Players.LocalPlayer:SetAttribute("PlayerLevel", PlayerLevel.Value)
+			end
+		end
+	})
+	PlayerLevel = PlayerLevelSet:CreateSlider({
+		Name = 'Sets your desired player level',
+		Function = function() if PlayerLevelSet.Enabled then game.Players.LocalPlayer:SetAttribute("PlayerLevel", PlayerLevel.Value) end end,
+		Min = 1,
+		Max = 100,
+		Default = 100
+	})
+end)
+
+run(function()
+	local ZoomUnlocker = {Enabled = false}
+	local ZoomUnlockerMode = {Value = 'Infinite'}
+	local ZoomUnlockerZoom = {Value = 500}
+	local ZoomConnection, OldZoom = nil, nil
+	ZoomUnlocker = vape.Categories.Utility:CreateModule({
+		Name = 'ZoomUnlocker',
+        Tooltip = 'Unlocks the abillity to zoom more.',
+		Function = function(callback)
+			if callback then
+				OldZoom = lplr.CameraMaxZoomDistance
+				ZoomUnlocker = runService.Heartbeat:Connect(function()
+					if ZoomUnlockerMode.Value == 'Infinite' then
+						lplr.CameraMaxZoomDistance = 9e9
+					else
+						lplr.CameraMaxZoomDistance = ZoomUnlockerZoom.Value
+					end
+				end)
+			else
+				if ZoomUnlocker then ZoomUnlocker:Disconnect() end
+				lplr.CameraMaxZoomDistance = OldZoom
+				OldZoom = nil
+			end
+		end,
+        Default = false,
+		ExtraText = function()
+            return ZoomUnlockerMode.Value
+        end
+	})
+	ZoomUnlockerMode = ZoomUnlocker:CreateDropdown({
+		Name = 'Mode',
+		List = {
+			'Infinite',
+			'Custom'
+		},
+		Tooltip = 'Mode to unlock the zoom.',
+		Value = 'Infinite',
+		Function = function() end
+	})
+	ZoomUnlockerZoom = ZoomUnlocker:CreateSlider({
+		Name = 'Zoom',
+		Min = OldZoom or 13,
+		Max = 1000,
+		Tooltip = 'Amount to unlock the zoom.',
+		Function = function() end,
+		Default = 500
+	})
+end)
+
+run(function()
+	local a = {Enabled = false}
+	a = vape.Categories.World:CreateModule({
+		Name = "Leave Party",
+		Function = function(call)
+			if call then
+				a:Toggle(false)
+				game:GetService("ReplicatedStorage"):WaitForChild("events-@easy-games/lobby:shared/event/lobby-events@getEvents.Events"):WaitForChild("leaveParty"):FireServer()
+			end
+		end
+	})
+end)
+
+run(function()
+	local transformed = false
+	local GameTheme = {Enabled = false}
+	local GameThemeMode = {Value = "GameTheme"}
+
+	local themefunctions = {
+		Old = function()
+			task.spawn(function()
+				pcall(function() sethiddenproperty(lightingService, "Technology", "ShadowMap") end)
+				lightingService.Ambient = Color3.fromRGB(69, 69, 69)
+				lightingService.Brightness = 3
+				lightingService.EnvironmentDiffuseScale = 1
+				lightingService.EnvironmentSpecularScale = 1
+				lightingService.OutdoorAmbient = Color3.fromRGB(69, 69, 69)
+				lightingService.Atmosphere.Density = 0.1
+				lightingService.Atmosphere.Offset = 0.25
+				lightingService.Atmosphere.Color = Color3.fromRGB(198, 198, 198)
+				lightingService.Atmosphere.Decay = Color3.fromRGB(104, 112, 124)
+				lightingService.Atmosphere.Glare = 0
+				lightingService.Atmosphere.Haze = 0
+				lightingService.ClockTime = 13
+				lightingService.GeographicLatitude = 0
+				lightingService.GlobalShadows = false
+				lightingService.TimeOfDay = "13:00:00"
+				lightingService.Sky.SkyboxBk = "rbxassetid://7018684000"
+				lightingService.Sky.SkyboxDn = "rbxassetid://6334928194"
+				lightingService.Sky.SkyboxFt = "rbxassetid://7018684000"
+				lightingService.Sky.SkyboxLf = "rbxassetid://7018684000"
+				lightingService.Sky.SkyboxRt = "rbxassetid://7018684000"
+				lightingService.Sky.SkyboxUp = "rbxassetid://7018689553"
+			end)
+		end,
+		Winter = function()
+			task.spawn(function()
+				for i,v in pairs(lightingService:GetChildren()) do
+					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
+						v:Remove()
+					end
+				end
+				local sky = Instance.new("Sky")
+				sky.StarCount = 5000
+				sky.SkyboxUp = "rbxassetid://8139676647"
+				sky.SkyboxLf = "rbxassetid://8139676988"
+				sky.SkyboxFt = "rbxassetid://8139677111"
+				sky.SkyboxBk = "rbxassetid://8139677359"
+				sky.SkyboxDn = "rbxassetid://8139677253"
+				sky.SkyboxRt = "rbxassetid://8139676842"
+				sky.SunTextureId = "rbxassetid://6196665106"
+				sky.SunAngularSize = 11
+				sky.MoonTextureId = "rbxassetid://8139665943"
+				sky.MoonAngularSize = 30
+				sky.Parent = lightingService
+				local sunray = Instance.new("SunRaysEffect")
+				sunray.Intensity = 0.03
+				sunray.Parent = lightingService
+				local bloom = Instance.new("BloomEffect")
+				bloom.Threshold = 2
+				bloom.Intensity = 1
+				bloom.Size = 2
+				bloom.Parent = lightingService
+				local atmosphere = Instance.new("Atmosphere")
+				atmosphere.Density = 0.3
+				atmosphere.Offset = 0.25
+				atmosphere.Color = Color3.fromRGB(198, 198, 198)
+				atmosphere.Decay = Color3.fromRGB(104, 112, 124)
+				atmosphere.Glare = 0
+				atmosphere.Haze = 0
+				atmosphere.Parent = lightingService
+			end)
+			task.spawn(function()
+				local snowpart = Instance.new("Part")
+				snowpart.Size = Vector3.new(240, 0.5, 240)
+				snowpart.Name = "SnowParticle"
+				snowpart.Transparency = 1
+				snowpart.CanCollide = false
+				snowpart.Position = Vector3.new(0, 120, 286)
+				snowpart.Anchored = true
+				snowpart.Parent = game.Workspace
+				local snow = Instance.new("ParticleEmitter")
+				snow.RotSpeed = NumberRange.new(300)
+				snow.VelocitySpread = 35
+				snow.Rate = 28
+				snow.Texture = "rbxassetid://8158344433"
+				snow.Rotation = NumberRange.new(110)
+				snow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.16939899325371,0),NumberSequenceKeypoint.new(0.23365999758244,0.62841498851776,0.37158501148224),NumberSequenceKeypoint.new(0.56209099292755,0.38797798752785,0.2771390080452),NumberSequenceKeypoint.new(0.90577298402786,0.51912599802017,0),NumberSequenceKeypoint.new(1,1,0)})
+				snow.Lifetime = NumberRange.new(8,14)
+				snow.Speed = NumberRange.new(8,18)
+				snow.EmissionDirection = Enum.NormalId.Bottom
+				snow.SpreadAngle = Vector2.new(35,35)
+				snow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0,0),NumberSequenceKeypoint.new(0.039760299026966,1.3114800453186,0.32786899805069),NumberSequenceKeypoint.new(0.7554469704628,0.98360699415207,0.44038599729538),NumberSequenceKeypoint.new(1,0,0)})
+				snow.Parent = snowpart
+				local windsnow = Instance.new("ParticleEmitter")
+				windsnow.Acceleration = Vector3.new(0,0,1)
+				windsnow.RotSpeed = NumberRange.new(100)
+				windsnow.VelocitySpread = 35
+				windsnow.Rate = 28
+				windsnow.Texture = "rbxassetid://8158344433"
+				windsnow.EmissionDirection = Enum.NormalId.Bottom
+				windsnow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.16939899325371,0),NumberSequenceKeypoint.new(0.23365999758244,0.62841498851776,0.37158501148224),NumberSequenceKeypoint.new(0.56209099292755,0.38797798752785,0.2771390080452),NumberSequenceKeypoint.new(0.90577298402786,0.51912599802017,0),NumberSequenceKeypoint.new(1,1,0)})
+				windsnow.Lifetime = NumberRange.new(8,14)
+				windsnow.Speed = NumberRange.new(8,18)
+				windsnow.Rotation = NumberRange.new(110)
+				windsnow.SpreadAngle = Vector2.new(35,35)
+				windsnow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0,0),NumberSequenceKeypoint.new(0.039760299026966,1.3114800453186,0.32786899805069),NumberSequenceKeypoint.new(0.7554469704628,0.98360699415207,0.44038599729538),NumberSequenceKeypoint.new(1,0,0)})
+				windsnow.Parent = snowpart
+				repeat
+					task.wait()
+					if entityLibrary.isAlive then
+						snowpart.Position = entityLibrary.character.HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+					end
+				until not vapeInjected
+			end)
+		end,
+		Halloween = function()
+			task.spawn(function()
+				for i,v in pairs(lightingService:GetChildren()) do
+					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
+						v:Remove()
+					end
+				end
+				lightingService.TimeOfDay = "00:00:00"
+				pcall(function() game.Workspace.Clouds:Destroy() end)
+				local colorcorrection = Instance.new("ColorCorrectionEffect")
+				colorcorrection.TintColor = Color3.fromRGB(255, 185, 81)
+				colorcorrection.Brightness = 0.05
+				colorcorrection.Parent = lightingService
+			end)
+		end,
+		Valentines = function()
+			task.spawn(function()
+				for i,v in pairs(lightingService:GetChildren()) do
+					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
+						v:Remove()
+					end
+				end
+				local sky = Instance.new("Sky")
+				sky.SkyboxBk = "rbxassetid://1546230803"
+				sky.SkyboxDn = "rbxassetid://1546231143"
+				sky.SkyboxFt = "rbxassetid://1546230803"
+				sky.SkyboxLf = "rbxassetid://1546230803"
+				sky.SkyboxRt = "rbxassetid://1546230803"
+				sky.SkyboxUp = "rbxassetid://1546230451"
+				sky.Parent = lightingService
+				pcall(function() game.Workspace.Clouds:Destroy() end)
+				local colorcorrection = Instance.new("ColorCorrectionEffect")
+				colorcorrection.TintColor = Color3.fromRGB(255, 199, 220)
+				colorcorrection.Brightness = 0.05
+				colorcorrection.Parent = lightingService
+			end)
+		end
+	}
+
+	GameTheme = vape.Categories.Render:CreateModule({
+		Name = "GameTheme",
+		Function = function(callback)
+			if callback then
+				if not transformed then
+					transformed = true
+					themefunctions[GameThemeMode.Value]()
+				else
+					GameTheme:Toggle(false)
+				end
+			else
+				warningNotification("GameTheme", "Disabled Next Game", 10)
+			end
+		end,
+		ExtraText = function()
+			return GameThemeMode.Value
+		end
+	})
+	GameThemeMode = GameTheme:CreateDropdown({
+		Name = "Theme",
+		Function = function() end,
+		List = {"Old", "Winter", "Halloween", "Valentines"}
+	})
+end)
+
+run(function()
+    SpeedBoost = vape.Categories.Blatant:CreateModule({
+        Name = 'SpeedBoost',
+        Function = function(callback)
+            local Players = game:GetService("Players")
+            local RunService = game:GetService("RunService")
+            local Workspace = game:GetService("Workspace")
+
+            local player = Players.LocalPlayer
+            local connections = {}
+
+            local function applySpeedBoost(char)
+                local hrp = char:WaitForChild("HumanoidRootPart", 5)
+                local humanoid = char:WaitForChild("Humanoid", 5)
+                if not hrp or not humanoid then return end
+
+                humanoid.AutoRotate = false
+                local useCFrame = true
+                local speed = 31
+                local normalSpeed = 16
+                local running = true
+
+                task.spawn(function()
+                    while SpeedBoost.Enabled and running do
+                        useCFrame = true
+                        humanoid.WalkSpeed = 0
+                        task.wait(1)
+                        useCFrame = false
+                        humanoid.WalkSpeed = normalSpeed
+                        task.wait(1)
+                    end
+                end)
+
+                table.insert(connections, RunService.RenderStepped:Connect(function(dt)
+                    if not useCFrame or not hrp or not char or not char.Parent then return end
+
+                    local direction = humanoid.MoveDirection
+                    if direction.Magnitude > 0 then
+                        local moveDelta = direction.Unit * speed * dt
+                        local newPos = hrp.Position + moveDelta
+
+                        local rayParams = RaycastParams.new()
+                        rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+                        rayParams.FilterDescendantsInstances = {char}
+
+                        local result = Workspace:Raycast(hrp.Position, moveDelta, rayParams)
+
+                        if not result then
+                            hrp.CFrame = CFrame.new(newPos, newPos + Vector3.new(direction.X, 0, direction.Z))
+                        end
+                    end
+                end))
+            end
+
+            for _, conn in pairs(connections) do conn:Disconnect() end
+            table.clear(connections)
+
+            if callback then
+                if player.Character then
+                    applySpeedBoost(player.Character)
+                end
+                table.insert(connections, player.CharacterAdded:Connect(function(char)
+                    if SpeedBoost.Enabled then
+                        task.wait(1)
+                        applySpeedBoost(char)
+                    end
+                end))
+            else
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    player.Character.Humanoid.WalkSpeed = 16
+                    player.Character.Humanoid.AutoRotate = true
+                end
+                for _, conn in pairs(connections) do conn:Disconnect() end
+                table.clear(connections)
+            end
+        end,
+        Default = false,
+        Tooltip = "Bypass go brrr"
+    })
+end)
+																																													
+run(function()
     FirstPersonArm = vape.Categories.Utility:CreateModule({
         Name = 'FirstPersonArm',
         Function = function(callback)
@@ -3482,7 +3824,8 @@ run(function()
         Default = false,
         Tooltip = "Self Explanatory"
     })
-end)																																	
+end)
+																																					
 local AutoPlayAllow = nil
 local AutoWin = {Enabled = false}
 run(function()
