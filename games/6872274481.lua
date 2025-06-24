@@ -3298,14 +3298,15 @@ run(function()
         Name = 'FPSUnlocker',
         Function = function(callback)
             if callback then
-               		getgenv().fps = math.huge
-setfpscap = setfpscap or setfpscapfunc or set_fps_cap or syn and syn.set_fps_cap
-RunService = game:GetService("RunService")
-if setfpscap and RunService then
-    RunService.RenderStepped:Connect(function()
-        setfpscap(fps)
-    end)
-end
+                getgenv().fps = math.huge
+                local setfpscap = setfpscap or setfpscapfunc or set_fps_cap or (syn and syn.set_fps_cap)
+                local RunService = game:GetService("RunService")
+                if setfpscap and RunService then
+                    RunService.RenderStepped:Connect(function()
+                        setfpscap(fps)
+                    end)
+                end
+            end
         end,
         Default = false,
         Tooltip = "Sets your fps as high as possible using math.huge🤑"
