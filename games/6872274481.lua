@@ -4,7 +4,7 @@ local LocalPlayer = Players.LocalPlayer
 local cam = workspace.CurrentCamera
 
 local function isBadExecutor()
-    local badList = { "codex", "ronix", "frostware", "Fluxus", "Solara", "trigon", "VegaX" }
+    local badList = { "codex", "ronix", "frostware", "Fluxus", "Solara", "Evon", "VegaX" }
 
     local function check(name)
         name = name:lower()
