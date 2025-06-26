@@ -953,7 +953,7 @@ run(function()
 		Max = 30,
 		Default = 15
 	})
-	AimAssist:CreateToggle({
+Range =	AimAssist:CreateToggle({
 		Name = 'Range Circle',
 		Function = function(callback)
 			if callback then
