@@ -3651,66 +3651,29 @@ run(function()
         Name = 'UltraFPSBoost',
         Function = function(callback)
             local Players = game:GetService("Players")
-            local Lighting = game:GetService("Lighting")
             local Workspace = game:GetService("Workspace")
+            local Lighting = game:GetService("Lighting")
             local LocalPlayer = Players.LocalPlayer
 
-            local savedProps = {}
+            local savedProperties = {}
             local savedLighting = {}
-            local charConnection
+            local conn
 
-            local function isOtherPlayerCharacter(inst)
+            local function isPlayerCharacter(instance)
                 for _, player in ipairs(Players:GetPlayers()) do
-                    if player ~= LocalPlayer and player.Character and inst:IsDescendantOf(player.Character) then
+                    if instance:IsDescendantOf(player.Character or player.CharacterAdded:Wait()) then
                         return true
                     end
                 end
                 return false
             end
 
-            local function saveLighting()
-                savedLighting.FogStart = Lighting.FogStart
-                savedLighting.FogEnd = Lighting.FogEnd
-                savedLighting.FogColor = Lighting.FogColor
-                savedLighting.GlobalShadows = Lighting.GlobalShadows
-                savedLighting.Brightness = Lighting.Brightness
-                savedLighting.Effects = {}
-
-                for _, v in ipairs(Lighting:GetChildren()) do
-                    if v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect")
-                    or v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("BlurEffect") then
-                        savedLighting.Effects[v] = v.Enabled
-                        v.Enabled = false
-                    end
-                end
-
-                Lighting.FogStart = 1e10
-                Lighting.FogEnd = 1e10
-                Lighting.FogColor = Color3.new(1, 1, 1)
-                Lighting.GlobalShadows = false
-                Lighting.Brightness = 0
-            end
-
-            local function restoreLighting()
-                if savedLighting.FogStart then Lighting.FogStart = savedLighting.FogStart end
-                if savedLighting.FogEnd then Lighting.FogEnd = savedLighting.FogEnd end
-                if savedLighting.FogColor then Lighting.FogColor = savedLighting.FogColor end
-                if savedLighting.GlobalShadows ~= nil then Lighting.GlobalShadows = savedLighting.GlobalShadows end
-                if savedLighting.Brightness then Lighting.Brightness = savedLighting.Brightness end
-
-                for obj, state in pairs(savedLighting.Effects or {}) do
-                    if obj and obj:IsDescendantOf(Lighting) then
-                        obj.Enabled = state
-                    end
-                end
-            end
-
             local function applyBoost()
+                savedProperties = {}
                 for _, obj in ipairs(Workspace:GetDescendants()) do
-                    if not isOtherPlayerCharacter(obj) and not (LocalPlayer.Character and obj:IsDescendantOf(LocalPlayer.Character)) then
-                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart")
-                        or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
-                            savedProps[obj] = {
+                    if not isPlayerCharacter(obj) then
+                        if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+                            savedProperties[obj] = {
                                 Material = obj.Material,
                                 Color = obj.Color,
                                 Reflectance = obj.Reflectance,
@@ -3723,49 +3686,84 @@ run(function()
                                 obj.TextureID = ""
                             end
                         elseif obj:IsA("Decal") or obj:IsA("Texture") then
-                            savedProps[obj] = { Texture = obj.Texture }
+                            savedProperties[obj] = { Texture = obj.Texture }
                             obj.Texture = ""
                         elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
-                            savedProps[obj] = { Lifetime = obj.Lifetime }
+                            savedProperties[obj] = { Lifetime = obj.Lifetime }
                             obj.Lifetime = NumberRange.new(0)
                         elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
-                            savedProps[obj] = { Enabled = obj.Enabled }
+                            savedProperties[obj] = { Enabled = obj.Enabled }
                             obj.Enabled = false
                         end
                     end
                 end
-                saveLighting()
+
+                savedLighting = {
+                    FogStart = Lighting.FogStart,
+                    FogEnd = Lighting.FogEnd,
+                    FogColor = Lighting.FogColor,
+                    GlobalShadows = Lighting.GlobalShadows,
+                    Brightness = Lighting.Brightness,
+                    Effects = {}
+                }
+
+                for _, effect in ipairs(Lighting:GetChildren()) do
+                    if effect:IsA("PostEffect") then
+                        savedLighting.Effects[effect] = effect.Enabled
+                        effect.Enabled = false
+                    end
+                end
+
+                Lighting.FogStart = 1e10
+                Lighting.FogEnd = 1e10
+                Lighting.FogColor = Color3.new(1, 1, 1)
+                Lighting.GlobalShadows = false
+                Lighting.Brightness = 0
             end
 
             local function restoreBoost()
-                for obj, props in pairs(savedProps) do
+                for obj, props in pairs(savedProperties) do
                     if obj and obj.Parent then
-                        for prop, val in pairs(props) do
+                        for prop, value in pairs(props) do
                             pcall(function()
-                                obj[prop] = val
+                                obj[prop] = value
                             end)
                         end
                     end
                 end
-                savedProps = {}
-                restoreLighting()
+                savedProperties = {}
+
+                if savedLighting then
+                    if savedLighting.FogStart then Lighting.FogStart = savedLighting.FogStart end
+                    if savedLighting.FogEnd then Lighting.FogEnd = savedLighting.FogEnd end
+                    if savedLighting.FogColor then Lighting.FogColor = savedLighting.FogColor end
+                    if savedLighting.GlobalShadows ~= nil then Lighting.GlobalShadows = savedLighting.GlobalShadows end
+                    if savedLighting.Brightness then Lighting.Brightness = savedLighting.Brightness end
+
+                    for effect, state in pairs(savedLighting.Effects or {}) do
+                        if effect then
+                            effect.Enabled = state
+                        end
+                    end
+                end
+                savedLighting = {}
             end
 
             if callback then
                 applyBoost()
-                charConnection = LocalPlayer.CharacterAdded:Connect(function()
+                conn = LocalPlayer.CharacterAdded:Connect(function()
                     task.wait(1)
                     applyBoost()
                 end)
             else
-                if charConnection then charConnection:Disconnect() end
                 restoreBoost()
+                if conn then conn:Disconnect() conn = nil end
             end
         end,
         Default = false,
         Tooltip = ""
     })
-end)																																				
+end)																															
 																																											
 --run(function()
     --SpeedBoost = vape.Categories.Blatant:CreateModule({
