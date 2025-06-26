@@ -3651,35 +3651,89 @@ run(function()
         Name = 'UltraFPSBoost',
         Function = function(callback)
             local Players = game:GetService("Players")
-            local Workspace = game.Workspace
+            local Workspace = game:GetService("Workspace")
             local Lighting = game:GetService("Lighting")
-            local white = Color3.fromRGB(255, 255, 255)
+            local LocalPlayer = Players.LocalPlayer
+
+            local storedProperties = {}
+            local lightingDefaults = {}
             local connection
 
-            local function apply()
+            local function isOtherPlayerCharacter(instance)
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and instance:IsDescendantOf(player.Character) then
+                        return true
+                    end
+                end
+                return false
+            end
+
+            local function storeLightingDefaults()
+                lightingDefaults = {
+                    FogStart = Lighting.FogStart,
+                    FogEnd = Lighting.FogEnd,
+                    FogColor = Lighting.FogColor,
+                    GlobalShadows = Lighting.GlobalShadows,
+                    Brightness = Lighting.Brightness,
+                }
+                for _, effect in ipairs(Lighting:GetChildren()) do
+                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or
+                        effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                        lightingDefaults[effect] = effect.Enabled
+                    end
+                end
+            end
+
+            local function restoreLightingDefaults()
+                for prop, val in pairs(lightingDefaults) do
+                    if typeof(prop) == "Instance" and prop:IsDescendantOf(Lighting) then
+                        prop.Enabled = val
+                    else
+                        Lighting[prop] = val
+                    end
+                end
+            end
+
+            local function applyFPSBoost()
                 for _, obj in ipairs(Workspace:GetDescendants()) do
-                    if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
-                        obj.Material = Enum.Material.Plastic
-                        obj.Color = white
-                        obj.Reflectance = 0
-                        if obj:IsA("MeshPart") then
-                            obj.TextureID = ""
+                    if not isOtherPlayerCharacter(obj) and not (LocalPlayer.Character and obj:IsDescendantOf(LocalPlayer.Character)) then
+                        local prop = {}
+
+                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
+                            prop.Material = obj.Material
+                            prop.Color = obj.Color
+                            prop.Reflectance = obj.Reflectance
+                            if obj:IsA("MeshPart") then
+                                prop.TextureID = obj.TextureID
+                                obj.TextureID = ""
+                            end
+                            obj.Material = Enum.Material.Plastic
+                            obj.Color = Color3.fromRGB(255, 255, 255)
+                            obj.Reflectance = 0
+                            storedProperties[obj] = prop
+
+                        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                            prop.Lifetime = obj.Lifetime
+                            obj.Lifetime = NumberRange.new(0)
+                            storedProperties[obj] = prop
+
+                        elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
+                            prop.Enabled = obj.Enabled
+                            obj.Enabled = false
+                            storedProperties[obj] = prop
+
+                        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                            obj:Destroy()
                         end
-                    elseif obj:IsA("Decal") or obj:IsA("Texture") then
-                        obj:Destroy()
-                    elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
-                        obj.Lifetime = NumberRange.new(0)
-                    elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
-                        obj.Enabled = false
                     end
                 end
 
+                storeLightingDefaults()
                 for _, effect in ipairs(Lighting:GetChildren()) do
-                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                    if lightingDefaults[effect] ~= nil then
                         effect.Enabled = false
                     end
                 end
-
                 Lighting.FogStart = 1e10
                 Lighting.FogEnd = 1e10
                 Lighting.FogColor = Color3.new(1, 1, 1)
@@ -3687,20 +3741,33 @@ run(function()
                 Lighting.Brightness = 0
             end
 
+            local function restoreFPSBoost()
+                for obj, props in pairs(storedProperties) do
+                    if obj and obj.Parent then
+                        for k, v in pairs(props) do
+                            pcall(function()
+                                obj[k] = v
+                            end)
+                        end
+                    end
+                end
+                storedProperties = {}
+                restoreLightingDefaults()
+            end
+
             if callback then
-                apply()
-                connection = Players.LocalPlayer.CharacterAdded:Connect(function()
+                applyFPSBoost()
+                connection = LocalPlayer.CharacterAdded:Connect(function()
                     task.wait(1)
-                    apply()
+                    applyFPSBoost()
                 end)
             else
-                if connection then
-                    connection:Disconnect()
-                end
+                if connection then connection:Disconnect() end
+                restoreFPSBoost()
             end
         end,
         Default = false,
-        Tooltip = "Boosts FPS by removing visuals"
+        Tooltip = "FPS Boost (Ultra)"
     })
 end)
 																																								
