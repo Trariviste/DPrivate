@@ -3700,7 +3700,7 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Fps Booster (Ultra)"
+        Tooltip = "Boosts FPS by removing visuals"
     })
 end)
 																																								
