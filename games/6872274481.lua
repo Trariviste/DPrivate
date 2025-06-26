@@ -2371,85 +2371,6 @@ run(function()
 end)
 																					
 run(function()
-    UltraFPSBoost = vape.Categories.Utility:CreateModule({
-        Name = 'UltraFPSBoost',
-        Function = function(callback)
-            local g = game
-            local w = g.Workspace
-            local l = g.Lighting
-            local t = w.Terrain
-            local players = g:GetService("Players")
-
-            if callback then
-                -- Apply FPS boost settings
-                t.WaterWaveSize = 0
-                t.WaterWaveSpeed = 0
-                t.WaterReflectance = 0
-                t.WaterTransparency = 0
-                l.GlobalShadows = false
-                l.FogEnd = 1e10
-                l.Brightness = 0
-
-                pcall(function()
-                    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-                end)
-
-                local function isInAccessory(instance)
-                    return instance:FindFirstAncestorWhichIsA("Accessory") ~= nil
-                end
-
-                for _, v in ipairs(g:GetDescendants()) do
-                    if not isInAccessory(v) then
-                        if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
-                            v.Material = Enum.Material.Plastic
-                            v.Reflectance = 0
-                        elseif v:IsA("MeshPart") then
-                            v.Material = Enum.Material.Plastic
-                            v.Reflectance = 0
-                            v.TextureID = ""
-                        elseif v:IsA("Decal") or v:IsA("Texture") then
-                            v.Transparency = 1
-                        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                            v.Lifetime = NumberRange.new(0)
-                        elseif v:IsA("Explosion") then
-                            v.BlastPressure = 1
-                            v.BlastRadius = 1
-                        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
-                            v.Enabled = false
-                        end
-                    end
-                end
-
-                for _, e in ipairs(l:GetChildren()) do
-                    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or 
-                       e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
-                        e.Enabled = false
-                    end
-                end
-            else
-                -- Restore basic lighting and terrain settings
-                t.WaterWaveSize = 0.1
-                t.WaterWaveSpeed = 1
-                t.WaterReflectance = 1
-                t.WaterTransparency = 0.5
-                l.GlobalShadows = true
-                l.FogEnd = 1000
-                l.Brightness = 2
-
-                -- Re-enable post-processing
-                for _, e in ipairs(l:GetChildren()) do
-                    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or 
-                       e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
-                        e.Enabled = true
-                    end
-                end
-            end
-        end,
-        Tooltip = "Toggle ultra FPS boost on or off"
-    })
-end)
-
-run(function()
     PartyPopperExploit = vape.Categories.Utility:CreateModule({
         Name = 'PartyPopperExploit',
         Function = function(callback)
@@ -3546,19 +3467,38 @@ run(function()
 end)
 
 run(function()
+	local lightingService = game:GetService("Lighting")
 	local transformed = false
 	local GameTheme = {Enabled = false}
 	local GameThemeMode = {Value = "GameTheme"}
 
+	local function clearLighting()
+		for _, v in pairs(lightingService:GetChildren()) do
+			if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") or v:IsA("SunRaysEffect") or v:IsA("BloomEffect") then
+				v:Destroy()
+			end
+		end
+		pcall(function() game.Workspace:FindFirstChild("SnowParticle"):Destroy() end)
+		pcall(function() game.Workspace.Clouds:Destroy() end)
+		lightingService.Ambient = Color3.new(0, 0, 0)
+		lightingService.Brightness = 2
+		lightingService.OutdoorAmbient = Color3.new(0, 0, 0)
+		lightingService.TimeOfDay = "14:00:00"
+		lightingService.ClockTime = 14
+		lightingService.GlobalShadows = true
+	end
+
 	local themefunctions = {
 		Old = function()
 			task.spawn(function()
+				clearLighting()
 				pcall(function() sethiddenproperty(lightingService, "Technology", "ShadowMap") end)
 				lightingService.Ambient = Color3.fromRGB(69, 69, 69)
 				lightingService.Brightness = 3
 				lightingService.EnvironmentDiffuseScale = 1
 				lightingService.EnvironmentSpecularScale = 1
 				lightingService.OutdoorAmbient = Color3.fromRGB(69, 69, 69)
+				lightingService.Atmosphere = Instance.new("Atmosphere", lightingService)
 				lightingService.Atmosphere.Density = 0.1
 				lightingService.Atmosphere.Offset = 0.25
 				lightingService.Atmosphere.Color = Color3.fromRGB(198, 198, 198)
@@ -3566,9 +3506,7 @@ run(function()
 				lightingService.Atmosphere.Glare = 0
 				lightingService.Atmosphere.Haze = 0
 				lightingService.ClockTime = 13
-				lightingService.GeographicLatitude = 0
-				lightingService.GlobalShadows = false
-				lightingService.TimeOfDay = "13:00:00"
+				lightingService.Sky = Instance.new("Sky", lightingService)
 				lightingService.Sky.SkyboxBk = "rbxassetid://7018684000"
 				lightingService.Sky.SkyboxDn = "rbxassetid://6334928194"
 				lightingService.Sky.SkyboxFt = "rbxassetid://7018684000"
@@ -3577,14 +3515,12 @@ run(function()
 				lightingService.Sky.SkyboxUp = "rbxassetid://7018689553"
 			end)
 		end,
+
 		Winter = function()
 			task.spawn(function()
-				for i,v in pairs(lightingService:GetChildren()) do
-					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
-						v:Remove()
-					end
-				end
-				local sky = Instance.new("Sky")
+				clearLighting()
+
+				local sky = Instance.new("Sky", lightingService)
 				sky.StarCount = 5000
 				sky.SkyboxUp = "rbxassetid://8139676647"
 				sky.SkyboxLf = "rbxassetid://8139676988"
@@ -3593,106 +3529,91 @@ run(function()
 				sky.SkyboxDn = "rbxassetid://8139677253"
 				sky.SkyboxRt = "rbxassetid://8139676842"
 				sky.SunTextureId = "rbxassetid://6196665106"
-				sky.SunAngularSize = 11
 				sky.MoonTextureId = "rbxassetid://8139665943"
-				sky.MoonAngularSize = 30
-				sky.Parent = lightingService
-				local sunray = Instance.new("SunRaysEffect")
+
+				local sunray = Instance.new("SunRaysEffect", lightingService)
 				sunray.Intensity = 0.03
-				sunray.Parent = lightingService
-				local bloom = Instance.new("BloomEffect")
+
+				local bloom = Instance.new("BloomEffect", lightingService)
 				bloom.Threshold = 2
 				bloom.Intensity = 1
 				bloom.Size = 2
-				bloom.Parent = lightingService
-				local atmosphere = Instance.new("Atmosphere")
+
+				local atmosphere = Instance.new("Atmosphere", lightingService)
 				atmosphere.Density = 0.3
 				atmosphere.Offset = 0.25
 				atmosphere.Color = Color3.fromRGB(198, 198, 198)
 				atmosphere.Decay = Color3.fromRGB(104, 112, 124)
-				atmosphere.Glare = 0
-				atmosphere.Haze = 0
-				atmosphere.Parent = lightingService
-			end)
-			task.spawn(function()
-				local snowpart = Instance.new("Part")
-				snowpart.Size = Vector3.new(240, 0.5, 240)
+
+				local snowpart = Instance.new("Part", workspace)
 				snowpart.Name = "SnowParticle"
+				snowpart.Size = Vector3.new(240, 0.5, 240)
+				snowpart.Anchored = true
 				snowpart.Transparency = 1
 				snowpart.CanCollide = false
 				snowpart.Position = Vector3.new(0, 120, 286)
-				snowpart.Anchored = true
-				snowpart.Parent = game.Workspace
-				local snow = Instance.new("ParticleEmitter")
-				snow.RotSpeed = NumberRange.new(300)
-				snow.VelocitySpread = 35
-				snow.Rate = 28
-				snow.Texture = "rbxassetid://8158344433"
-				snow.Rotation = NumberRange.new(110)
-				snow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.16939899325371,0),NumberSequenceKeypoint.new(0.23365999758244,0.62841498851776,0.37158501148224),NumberSequenceKeypoint.new(0.56209099292755,0.38797798752785,0.2771390080452),NumberSequenceKeypoint.new(0.90577298402786,0.51912599802017,0),NumberSequenceKeypoint.new(1,1,0)})
-				snow.Lifetime = NumberRange.new(8,14)
-				snow.Speed = NumberRange.new(8,18)
-				snow.EmissionDirection = Enum.NormalId.Bottom
-				snow.SpreadAngle = Vector2.new(35,35)
-				snow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0,0),NumberSequenceKeypoint.new(0.039760299026966,1.3114800453186,0.32786899805069),NumberSequenceKeypoint.new(0.7554469704628,0.98360699415207,0.44038599729538),NumberSequenceKeypoint.new(1,0,0)})
-				snow.Parent = snowpart
-				local windsnow = Instance.new("ParticleEmitter")
-				windsnow.Acceleration = Vector3.new(0,0,1)
-				windsnow.RotSpeed = NumberRange.new(100)
-				windsnow.VelocitySpread = 35
-				windsnow.Rate = 28
-				windsnow.Texture = "rbxassetid://8158344433"
-				windsnow.EmissionDirection = Enum.NormalId.Bottom
-				windsnow.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0,0.16939899325371,0),NumberSequenceKeypoint.new(0.23365999758244,0.62841498851776,0.37158501148224),NumberSequenceKeypoint.new(0.56209099292755,0.38797798752785,0.2771390080452),NumberSequenceKeypoint.new(0.90577298402786,0.51912599802017,0),NumberSequenceKeypoint.new(1,1,0)})
-				windsnow.Lifetime = NumberRange.new(8,14)
-				windsnow.Speed = NumberRange.new(8,18)
-				windsnow.Rotation = NumberRange.new(110)
-				windsnow.SpreadAngle = Vector2.new(35,35)
-				windsnow.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0,0),NumberSequenceKeypoint.new(0.039760299026966,1.3114800453186,0.32786899805069),NumberSequenceKeypoint.new(0.7554469704628,0.98360699415207,0.44038599729538),NumberSequenceKeypoint.new(1,0,0)})
-				windsnow.Parent = snowpart
-				repeat
-					task.wait()
-					if entityLibrary.isAlive then
-						snowpart.Position = entityLibrary.character.HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+
+				local function makeEmitter()
+					local emitter = Instance.new("ParticleEmitter")
+					emitter.Texture = "rbxassetid://8158344433"
+					emitter.RotSpeed = NumberRange.new(300)
+					emitter.Rotation = NumberRange.new(110)
+					emitter.Transparency = NumberSequence.new{
+						NumberSequenceKeypoint.new(0,0.17),
+						NumberSequenceKeypoint.new(1,1)
+					}
+					emitter.Lifetime = NumberRange.new(8,14)
+					emitter.Speed = NumberRange.new(8,18)
+					emitter.EmissionDirection = Enum.NormalId.Bottom
+					emitter.SpreadAngle = Vector2.new(35,35)
+					emitter.Size = NumberSequence.new{
+						NumberSequenceKeypoint.new(0,0),
+						NumberSequenceKeypoint.new(0.04,1.31),
+						NumberSequenceKeypoint.new(0.76,0.98),
+						NumberSequenceKeypoint.new(1,0)
+					}
+					return emitter
+				end
+
+				makeEmitter().Parent = snowpart
+				local wind = makeEmitter()
+				wind.Acceleration = Vector3.new(0, 0, 1)
+				wind.Parent = snowpart
+
+				task.spawn(function()
+					while GameTheme.Enabled and snowpart and snowpart.Parent do
+						task.wait()
+						if entityLibrary and entityLibrary.isAlive and entityLibrary.character then
+							snowpart.Position = entityLibrary.character.HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+						end
 					end
-				until not vapeInjected
+				end)
 			end)
 		end,
+
 		Halloween = function()
 			task.spawn(function()
-				for i,v in pairs(lightingService:GetChildren()) do
-					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
-						v:Remove()
-					end
-				end
+				clearLighting()
 				lightingService.TimeOfDay = "00:00:00"
-				pcall(function() game.Workspace.Clouds:Destroy() end)
-				local colorcorrection = Instance.new("ColorCorrectionEffect")
+				local colorcorrection = Instance.new("ColorCorrectionEffect", lightingService)
 				colorcorrection.TintColor = Color3.fromRGB(255, 185, 81)
 				colorcorrection.Brightness = 0.05
-				colorcorrection.Parent = lightingService
 			end)
 		end,
+
 		Valentines = function()
 			task.spawn(function()
-				for i,v in pairs(lightingService:GetChildren()) do
-					if v:IsA("Atmosphere") or v:IsA("Sky") or v:IsA("PostEffect") then
-						v:Remove()
-					end
-				end
-				local sky = Instance.new("Sky")
+				clearLighting()
+				local sky = Instance.new("Sky", lightingService)
 				sky.SkyboxBk = "rbxassetid://1546230803"
 				sky.SkyboxDn = "rbxassetid://1546231143"
 				sky.SkyboxFt = "rbxassetid://1546230803"
 				sky.SkyboxLf = "rbxassetid://1546230803"
 				sky.SkyboxRt = "rbxassetid://1546230803"
 				sky.SkyboxUp = "rbxassetid://1546230451"
-				sky.Parent = lightingService
-				pcall(function() game.Workspace.Clouds:Destroy() end)
-				local colorcorrection = Instance.new("ColorCorrectionEffect")
+				local colorcorrection = Instance.new("ColorCorrectionEffect", lightingService)
 				colorcorrection.TintColor = Color3.fromRGB(255, 199, 220)
 				colorcorrection.Brightness = 0.05
-				colorcorrection.Parent = lightingService
 			end)
 		end
 	}
@@ -3701,108 +3622,235 @@ run(function()
 		Name = "GameTheme",
 		Function = function(callback)
 			if callback then
-				if not transformed then
-					transformed = true
-					themefunctions[GameThemeMode.Value]()
-				else
-					GameTheme:Toggle(false)
-				end
+				transformed = true
+				themefunctions[GameThemeMode.Value]()
 			else
-				warningNotification("GameTheme", "Disabled Next Game", 10)
+				clearLighting()
+				transformed = false
+				--vape:CreateNotification("GameTheme", "Disabled GameTheme", 5)
 			end
 		end,
 		ExtraText = function()
 			return GameThemeMode.Value
 		end
 	})
+
 	GameThemeMode = GameTheme:CreateDropdown({
 		Name = "Theme",
-		Function = function() end,
+		Function = function(val)
+			if GameTheme.Enabled then
+				themefunctions[val]()
+			end
+		end,
 		List = {"Old", "Winter", "Halloween", "Valentines"}
 	})
 end)
 
 run(function()
-    SpeedBoost = vape.Categories.Blatant:CreateModule({
-        Name = 'SpeedBoost',
+    local savedProps = {}
+    local lightingProps = {}
+    local connections = {}
+
+    UltraFPSBoost = vape.Categories.Utility:CreateModule({
+        Name = 'UltraFPSBoost',
         Function = function(callback)
             local Players = game:GetService("Players")
-            local RunService = game:GetService("RunService")
+            local Lighting = game:GetService("Lighting")
             local Workspace = game:GetService("Workspace")
+            local gray = Color3.fromRGB(90, 90, 90)
+            local lplr = Players.LocalPlayer
 
-            local player = Players.LocalPlayer
-            local connections = {}
-
-            local function applySpeedBoost(char)
-                local hrp = char:WaitForChild("HumanoidRootPart", 5)
-                local humanoid = char:WaitForChild("Humanoid", 5)
-                if not hrp or not humanoid then return end
-
-                humanoid.AutoRotate = false
-                local useCFrame = true
-                local speed = 31
-                local normalSpeed = 16
-                local running = true
-
-                task.spawn(function()
-                    while SpeedBoost.Enabled and running do
-                        useCFrame = true
-                        humanoid.WalkSpeed = 0
-                        task.wait(1)
-                        useCFrame = false
-                        humanoid.WalkSpeed = normalSpeed
-                        task.wait(1)
+            local function isPlayerCharacter(instance)
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player.Character and instance:IsDescendantOf(player.Character) then
+                        return true
                     end
-                end)
+                end
+                return false
+            end
 
-                table.insert(connections, RunService.RenderStepped:Connect(function(dt)
-                    if not useCFrame or not hrp or not char or not char.Parent then return end
-
-                    local direction = humanoid.MoveDirection
-                    if direction.Magnitude > 0 then
-                        local moveDelta = direction.Unit * speed * dt
-                        local newPos = hrp.Position + moveDelta
-
-                        local rayParams = RaycastParams.new()
-                        rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-                        rayParams.FilterDescendantsInstances = {char}
-
-                        local result = Workspace:Raycast(hrp.Position, moveDelta, rayParams)
-
-                        if not result then
-                            hrp.CFrame = CFrame.new(newPos, newPos + Vector3.new(direction.X, 0, direction.Z))
+            local function applyFPSBoost()
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if not isPlayerCharacter(obj) then
+                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
+                            savedProps[obj] = {
+                                Material = obj.Material,
+                                Color = obj.Color,
+                                Reflectance = obj.Reflectance,
+                                TextureID = obj:IsA("MeshPart") and obj.TextureID or nil
+                            }
+                            obj.Material = Enum.Material.Air
+                            obj.Color = gray
+                            obj.Reflectance = 0
+                            if obj:IsA("MeshPart") then
+                                obj.TextureID = ""
+                            end
+                        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                            obj:Destroy()
+                        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                            savedProps[obj] = { Lifetime = obj.Lifetime }
+                            obj.Lifetime = NumberRange.new(0)
+                        elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
+                            savedProps[obj] = { Enabled = obj.Enabled }
+                            obj.Enabled = false
                         end
                     end
-                end))
+                end
+
+                for _, effect in ipairs(Lighting:GetChildren()) do
+                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                        lightingProps[effect] = { Enabled = effect.Enabled }
+                        effect.Enabled = false
+                    end
+                end
+
+                lightingProps["FogStart"] = Lighting.FogStart
+                lightingProps["FogEnd"] = Lighting.FogEnd
+                lightingProps["FogColor"] = Lighting.FogColor
+                lightingProps["GlobalShadows"] = Lighting.GlobalShadows
+                lightingProps["Brightness"] = Lighting.Brightness
+
+                Lighting.FogStart = 1e10
+                Lighting.FogEnd = 1e10
+                Lighting.FogColor = Color3.new(1, 1, 1)
+                Lighting.GlobalShadows = false
+                Lighting.Brightness = 0
+            end
+
+            local function restoreFPSBoost()
+                for obj, props in pairs(savedProps) do
+                    if obj and obj.Parent then
+                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
+                            obj.Material = props.Material
+                            obj.Color = props.Color
+                            obj.Reflectance = props.Reflectance
+                            if obj:IsA("MeshPart") and props.TextureID then
+                                obj.TextureID = props.TextureID
+                            end
+                        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                            obj.Lifetime = props.Lifetime
+                        elseif obj:IsA("Fire") or obj:IsA("SpotLight") or obj:IsA("Smoke") then
+                            obj.Enabled = props.Enabled
+                        end
+                    end
+                end
+                savedProps = {}
+
+                for effect, props in pairs(lightingProps) do
+                    if typeof(effect) == "Instance" and effect:IsA("PostEffect") then
+                        effect.Enabled = props.Enabled
+                    end
+                end
+
+                Lighting.FogStart = lightingProps["FogStart"] or 0
+                Lighting.FogEnd = lightingProps["FogEnd"] or 0
+                Lighting.FogColor = lightingProps["FogColor"] or Color3.new(0,0,0)
+                Lighting.GlobalShadows = lightingProps["GlobalShadows"] or true
+                Lighting.Brightness = lightingProps["Brightness"] or 1
+                lightingProps = {}
             end
 
             for _, conn in pairs(connections) do conn:Disconnect() end
             table.clear(connections)
 
             if callback then
-                if player.Character then
-                    applySpeedBoost(player.Character)
-                end
-                table.insert(connections, player.CharacterAdded:Connect(function(char)
-                    if SpeedBoost.Enabled then
-                        task.wait(1)
-                        applySpeedBoost(char)
+                applyFPSBoost()
+                table.insert(connections, lplr.CharacterAdded:Connect(function()
+                    task.wait(1)
+                    if UltraFPSBoost.Enabled then
+                        applyFPSBoost()
                     end
                 end))
             else
-                if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = 16
-                    player.Character.Humanoid.AutoRotate = true
-                end
-                for _, conn in pairs(connections) do conn:Disconnect() end
-                table.clear(connections)
+                restoreFPSBoost()
             end
         end,
         Default = false,
-        Tooltip = "Bypass go brrr"
+        Tooltip = "Fps Boost (Ultra)"
     })
 end)
-																																													
+																																								
+--run(function()
+    --SpeedBoost = vape.Categories.Blatant:CreateModule({
+       -- Name = 'SpeedBoost',
+      --  Function = function(callback)
+     --       local Players = game:GetService("Players")
+     --       local RunService = game:GetService("RunService")
+      --      local Workspace = game:GetService("Workspace")
+
+       --     local player = Players.LocalPlayer
+       --     local connections = {}
+
+          --  local function applySpeedBoost(char)
+             --   local hrp = char:WaitForChild("HumanoidRootPart", 5)
+            --    local humanoid = char:WaitForChild("Humanoid", 5)
+            --    if not hrp or not humanoid then return end
+
+             --   humanoid.AutoRotate = false
+             --   local useCFrame = true
+              --  local speed = 31
+             --   local normalSpeed = 16
+             --   local running = true
+
+              --  task.spawn(function()
+                 --   while SpeedBoost.Enabled and running do
+                    --    useCFrame = true
+                       -- humanoid.WalkSpeed = 0
+                       -- task.wait(1)
+                      --  useCFrame = false
+                      --  humanoid.WalkSpeed = normalSpeed
+                      --  task.wait(1)
+                    --end
+                --end)
+
+                --table.insert(connections, RunService.RenderStepped:Connect(function(dt)
+                  --  if not useCFrame or not hrp or not char or not char.Parent then return end
+
+                   -- local direction = humanoid.MoveDirection
+                   -- if direction.Magnitude > 0 then
+                      --  local moveDelta = direction.Unit * speed * dt
+                       -- local newPos = hrp.Position + moveDelta
+
+                      --  local rayParams = RaycastParams.new()
+                       -- rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+                      --  rayParams.FilterDescendantsInstances = {char}
+
+                       -- local result = Workspace:Raycast(hrp.Position, moveDelta, rayParams)
+
+                      --  if not result then
+                           -- hrp.CFrame = CFrame.new(newPos, newPos + Vector3.new(direction.X, 0, direction.Z))
+                       -- end
+                   -- end
+                --end))
+          --  end
+
+            --for _, conn in pairs(connections) do conn:Disconnect() end
+           -- table.clear(connections)
+
+          --  if callback then
+            --    if player.Character then
+              --      applySpeedBoost(player.Character)
+            --    end
+            --    table.insert(connections, player.CharacterAdded:Connect(function(char)
+             --       if SpeedBoost.Enabled then
+                 --       task.wait(1)
+               --         applySpeedBoost(char)
+               --     end
+              --  end))
+          --  else
+           --     if player.Character and player.Character:FindFirstChild("Humanoid") then
+             --       player.Character.Humanoid.WalkSpeed = 16
+             --       player.Character.Humanoid.AutoRotate = true
+           --     end
+           --     for _, conn in pairs(connections) do conn:Disconnect() end
+             --   table.clear(connections)
+	   --  end																																																
+    --    end,
+    --    Default = false,
+     --   Tooltip = "Bypass go brrr"
+ --   })
+--end)
+																																												
 run(function()
     FirstPersonArm = vape.Categories.Utility:CreateModule({
         Name = 'FirstPersonArm',
