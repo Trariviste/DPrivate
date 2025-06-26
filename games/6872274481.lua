@@ -3657,7 +3657,7 @@ run(function()
 
             local storedProperties = {}
             local lightingDefaults = {}
-            local connection
+            local characterConnection
 
             local function isOtherPlayerCharacter(instance)
                 for _, player in ipairs(Players:GetPlayers()) do
@@ -3677,8 +3677,8 @@ run(function()
                     Brightness = Lighting.Brightness,
                 }
                 for _, effect in ipairs(Lighting:GetChildren()) do
-                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect") or
-                        effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
+                    if effect:IsA("PostEffect") or effect:IsA("BloomEffect") or effect:IsA("ColorCorrectionEffect")
+                    or effect:IsA("SunRaysEffect") or effect:IsA("DepthOfFieldEffect") or effect:IsA("BlurEffect") then
                         lightingDefaults[effect] = effect.Enabled
                     end
                 end
@@ -3686,8 +3686,10 @@ run(function()
 
             local function restoreLightingDefaults()
                 for prop, val in pairs(lightingDefaults) do
-                    if typeof(prop) == "Instance" and prop:IsDescendantOf(Lighting) then
-                        prop.Enabled = val
+                    if typeof(prop) == "Instance" then
+                        if prop:IsDescendantOf(Lighting) then
+                            prop.Enabled = val
+                        end
                     else
                         Lighting[prop] = val
                     end
@@ -3699,7 +3701,8 @@ run(function()
                     if not isOtherPlayerCharacter(obj) and not (LocalPlayer.Character and obj:IsDescendantOf(LocalPlayer.Character)) then
                         local prop = {}
 
-                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart") or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
+                        if obj:IsA("BasePart") or obj:IsA("UnionOperation") or obj:IsA("CornerWedgePart")
+                        or obj:IsA("TrussPart") or obj:IsA("MeshPart") then
                             prop.Material = obj.Material
                             prop.Color = obj.Color
                             prop.Reflectance = obj.Reflectance
@@ -3722,8 +3725,15 @@ run(function()
                             obj.Enabled = false
                             storedProperties[obj] = prop
 
-                        elseif obj:IsA("Decal") or obj:IsA("Texture") then
-                            obj:Destroy()
+                        elseif obj:IsA("Decal") then
+                            prop.Texture = obj.Texture
+                            obj.Texture = ""
+                            storedProperties[obj] = prop
+
+                        elseif obj:IsA("Texture") then
+                            prop.Texture = obj.Texture
+                            obj.Texture = ""
+                            storedProperties[obj] = prop
                         end
                     end
                 end
@@ -3757,20 +3767,20 @@ run(function()
 
             if callback then
                 applyFPSBoost()
-                connection = LocalPlayer.CharacterAdded:Connect(function()
+                characterConnection = LocalPlayer.CharacterAdded:Connect(function()
                     task.wait(1)
                     applyFPSBoost()
                 end)
             else
-                if connection then connection:Disconnect() end
+                if characterConnection then characterConnection:Disconnect() end
                 restoreFPSBoost()
             end
         end,
         Default = false,
-        Tooltip = "FPS Boost (Ultra)"
+        Tooltip = "Fps Booster (Ultra)"
     })
 end)
-																																								
+																																											
 --run(function()
     --SpeedBoost = vape.Categories.Blatant:CreateModule({
        -- Name = 'SpeedBoost',
