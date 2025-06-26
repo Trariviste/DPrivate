@@ -3674,13 +3674,16 @@ run(function()
                 savedLighting.FogColor = Lighting.FogColor
                 savedLighting.GlobalShadows = Lighting.GlobalShadows
                 savedLighting.Brightness = Lighting.Brightness
+                savedLighting.Effects = {}
+
                 for _, v in ipairs(Lighting:GetChildren()) do
                     if v:IsA("PostEffect") or v:IsA("BloomEffect") or v:IsA("ColorCorrectionEffect")
                     or v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("BlurEffect") then
-                        savedLighting[v] = v.Enabled
+                        savedLighting.Effects[v] = v.Enabled
                         v.Enabled = false
                     end
                 end
+
                 Lighting.FogStart = 1e10
                 Lighting.FogEnd = 1e10
                 Lighting.FogColor = Color3.new(1, 1, 1)
@@ -3689,13 +3692,14 @@ run(function()
             end
 
             local function restoreLighting()
-                Lighting.FogStart = savedLighting.FogStart
-                Lighting.FogEnd = savedLighting.FogEnd
-                Lighting.FogColor = savedLighting.FogColor
-                Lighting.GlobalShadows = savedLighting.GlobalShadows
-                Lighting.Brightness = savedLighting.Brightness
-                for obj, state in pairs(savedLighting) do
-                    if typeof(obj) == "Instance" and obj:IsDescendantOf(Lighting) then
+                if savedLighting.FogStart then Lighting.FogStart = savedLighting.FogStart end
+                if savedLighting.FogEnd then Lighting.FogEnd = savedLighting.FogEnd end
+                if savedLighting.FogColor then Lighting.FogColor = savedLighting.FogColor end
+                if savedLighting.GlobalShadows ~= nil then Lighting.GlobalShadows = savedLighting.GlobalShadows end
+                if savedLighting.Brightness then Lighting.Brightness = savedLighting.Brightness end
+
+                for obj, state in pairs(savedLighting.Effects or {}) do
+                    if obj and obj:IsDescendantOf(Lighting) then
                         obj.Enabled = state
                     end
                 end
@@ -3759,9 +3763,9 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Fps Booster (Ultra)"
+        Tooltip = ""
     })
-end)																																											
+end)																																				
 																																											
 --run(function()
     --SpeedBoost = vape.Categories.Blatant:CreateModule({
