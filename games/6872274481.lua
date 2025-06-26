@@ -6360,49 +6360,6 @@ run(function()
 		Darker = true
 	})
 end)
-
-run(function()
-    Night = vape.Categories.Render:CreateModule({
-        Name = 'Night',
-        Function = function(callback)
-            local Lighting = game:GetService("Lighting")
-
-            if callback then
-                -- Remove all Clouds
-                for _, obj in ipairs(Lighting:GetChildren()) do
-                    if obj:IsA("Clouds") then
-                        obj:Destroy()
-                    end
-                end
-
-                -- Set ClockTime to 20 (8 PM)
-                Lighting.ClockTime = 20
-
-                -- Set default Roblox skybox
-                local defaultSky = Instance.new("Sky")
-                defaultSky.Name = "DefaultSky"
-                defaultSky.SkyboxBk = "rbxassetid://7018684000"
-                defaultSky.SkyboxDn = "rbxassetid://7018687832"
-                defaultSky.SkyboxFt = "rbxassetid://7018685215"
-                defaultSky.SkyboxLf = "rbxassetid://7018684379"
-                defaultSky.SkyboxRt = "rbxassetid://7018686132"
-                defaultSky.SkyboxUp = "rbxassetid://7018689553"
-                defaultSky.Parent = Lighting
-            else
-                -- Reset ClockTime to default (assume 14 = 2 PM)
-                Lighting.ClockTime = 14
-
-                -- Remove inserted skyboxes named "DefaultSky"
-                for _, obj in ipairs(Lighting:GetChildren()) do
-                    if obj:IsA("Sky") and obj.Name == "DefaultSky" then
-                        obj:Destroy()
-                    end
-                end
-            end
-        end,
-        Tooltip = "Night time"
-    })
-end)
 																																																																	
 run(function()
 	local AutoBalloon
