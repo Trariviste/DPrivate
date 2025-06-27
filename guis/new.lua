@@ -950,10 +950,11 @@ components = {
 		return optionapi
 	end,
 	Dropdown = function(optionsettings, children, api)
-		local optionapi = {
-			Type = 'Dropdown',
-			Value = optionsettings.List[1] or 'None',
-			Index = 0
+	local list = type(optionsettings.List) == "table" and optionsettings.List or {}
+	local optionapi = {
+		Type = 'Dropdown',
+		Value = list[1] or 'None',
+		Index = 0
 		}
 		
 		local dropdown = Instance.new('TextButton')
