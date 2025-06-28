@@ -2981,6 +2981,102 @@ run(function()
     })
 end)
 
+AutoLeave = GuiLibrary.ObjectsThatCanBeSaved.BlatantWindow.Api.CreateOptionsButton({
+		Name = "AutoLeave",
+		Function = function(callback)
+			if callback then
+				table.insert(AutoLeave.Connections, vapeEvents.EntityDeathEvent.Event:Connect(function(deathTable)
+					if (not leaveAttempted) and deathTable.finalKill and deathTable.entityInstance == lplr.Character then
+						leaveAttempted = true
+						if isEveryoneDead() and store.matchState ~= 2 then
+							task.wait(1 + (AutoLeaveDelay.Value / 10))
+							if bedwars.ClientStoreHandler:getState().Game.customMatch == nil and bedwars.ClientStoreHandler:getState().Party.leader.userId == lplr.UserId then
+								if not AutoPlayAgain.Enabled then
+									bedwars.Client:Get("TeleportToLobby"):SendToServer()
+								else
+									if AutoLeaveRandom.Enabled then
+										local listofmodes = {}
+										for i,v in pairs(bedwars.QueueMeta) do
+											if not v.disabled and not v.voiceChatOnly and not v.rankCategory then table.insert(listofmodes, i) end
+										end
+										bedwars.QueueController:joinQueue(listofmodes[math.random(1, #listofmodes)])
+									else
+										bedwars.QueueController:joinQueue(store.queueType)
+									end
+								end
+							end
+						end
+					end
+				end))
+				table.insert(AutoLeave.Connections, vapeEvents.MatchEndEvent.Event:Connect(function(deathTable)
+					task.wait(AutoLeaveDelay.Value / 10)
+					if not AutoLeave.Enabled then return end
+					if leaveAttempted then return end
+					leaveAttempted = true
+					if bedwars.ClientStoreHandler:getState().Game.customMatch == nil and bedwars.ClientStoreHandler:getState().Party.leader.userId == lplr.UserId then
+						if not AutoPlayAgain.Enabled then
+							bedwars.Client:Get("TeleportToLobby"):SendToServer()
+						else
+							if bedwars.ClientStoreHandler:getState().Party.queueState == 0 then
+								if AutoLeaveRandom.Enabled then
+									local listofmodes = {}
+									for i,v in pairs(bedwars.QueueMeta) do
+										if not v.disabled and not v.voiceChatOnly and not v.rankCategory then table.insert(listofmodes, i) end
+									end
+									bedwars.QueueController:joinQueue(listofmodes[math.random(1, #listofmodes)])
+								else
+									bedwars.QueueController:joinQueue(store.queueType)
+								end
+							end
+						end
+					end
+				end))
+				table.insert(AutoLeave.Connections, playersService.PlayerAdded:Connect(autoLeaveAdded))
+				for i, plr in pairs(playersService:GetPlayers()) do
+					autoLeaveAdded(plr)
+				end
+			end
+		end,
+		HoverText = "Leaves if a staff member joins your game or when the match ends."
+	})
+	AutoLeaveDelay = AutoLeave.CreateSlider({
+		Name = "Delay",
+		Min = 0,
+		Max = 50,
+		Default = 0,
+		Function = function() end,
+		HoverText = "Delay before going back to the hub."
+	})
+	AutoPlayAgain = AutoLeave.CreateToggle({
+		Name = "Play Again",
+		Function = function() end,
+		HoverText = "Automatically queues a new game.",
+		Default = true
+	})
+	AutoLeaveStaff = AutoLeave.CreateToggle({
+		Name = "Staff",
+		Function = function(callback)
+			if AutoLeaveStaff2.Object then
+				AutoLeaveStaff2.Object.Visible = callback
+			end
+		end,
+		HoverText = "Automatically uninjects when staff joins",
+		Default = true
+	})
+	AutoLeaveStaff2 = AutoLeave.CreateToggle({
+		Name = "Staff AutoConfig",
+		Function = function() end,
+		HoverText = "Instead of uninjecting, It will now reconfig vape temporarily to a more legit config.",
+		Default = true
+	})
+	AutoLeaveRandom = AutoLeave.CreateToggle({
+		Name = "Random",
+		Function = function(callback) end,
+		HoverText = "Chooses a random mode"
+	})
+	AutoLeaveStaff2.Object.Visible = false
+end)
+																															
 run(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
