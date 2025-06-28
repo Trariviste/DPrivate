@@ -1,4 +1,3 @@
-warningNotification("CreamyWare", "Test Notification", 10)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local cam = workspace.CurrentCamera
