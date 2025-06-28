@@ -3075,8 +3075,8 @@ AutoLeave = GuiLibrary.ObjectsThatCanBeSaved.BlatantWindow.Api.CreateOptionsButt
 		HoverText = "Chooses a random mode"
 	})
 	AutoLeaveStaff2.Object.Visible = false
-end)
-																															
+    end
+end)																															
 run(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
