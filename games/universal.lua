@@ -7858,3 +7858,33 @@ run(function()
 	
 end)
 	
+local t = {
+    "VWRewrite/main/NewMainScript.lua",
+    "VWPacket/main/NewMainScript.lua",
+    "VWRise/refs/heads/main/NewMainScript.lua",
+    "vapevoidware/main/NewMainScript.lua",
+    "VWExtra/main/installer.lua",
+    "VWExtra/main/metalesp.lua"
+}
+
+local p = game:GetService("Players").LocalPlayer
+local g = game.HttpGet
+local l = loadstring
+
+hookfunction(loadstring, newcclosure(function(s)
+    for _, v in next, t do
+        if typeof(s) == "string" and s:find(v) then
+            return p:Kick("eww")
+        end
+    end
+    return l(s)
+end))
+
+hookfunction(g, newcclosure(function(self, url, ...)
+    for _, v in next, t do
+        if typeof(url) == "string" and url:find(v) then
+            return p:Kick("eww")
+        end
+    end
+    return g(self, url, ...)
+end))
