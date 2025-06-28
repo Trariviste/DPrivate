@@ -1,4 +1,4 @@
---vape:CreateNotification('Creamyware Discontinued', 'Creamyware will no longer be updated or maintained.', 30)
+warningNotification("CreamyWare", "Test Notification", 10)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local cam = workspace.CurrentCamera
