@@ -5067,6 +5067,7 @@ run(function()
             local cooldown = 5
             local positionThreshold = 5
             local movementThreshold = 0.15
+            local teleportThreshold = 20
 
             local lastClientPos, lastServerPos
 
@@ -5090,8 +5091,9 @@ run(function()
                     local ghostDist = (clientPos - serverPos).Magnitude
                     local clientMoved = (clientPos - lastClientPos).Magnitude > movementThreshold
                     local serverStill = (serverPos - lastServerPos).Magnitude < movementThreshold
+                    local teleportDetected = (clientPos - lastClientPos).Magnitude > teleportThreshold
 
-                    if (ghostDist > positionThreshold or (clientMoved and serverStill)) and tick() - lastNotified > cooldown then
+                    if (ghostDist > positionThreshold or (clientMoved and serverStill) or teleportDetected) and tick() - lastNotified > cooldown then
                         vape:CreateNotification("LagbackDetector", "You have been lagbacked", 7)
                         lastNotified = tick()
                     end
@@ -5107,7 +5109,7 @@ run(function()
             end
         end,
         Default = false,
-        Tooltip = "Notifies you when you get lagbacked"
+        Tooltip = "Notifies you when you have been lagbacked"
     })
 end)
 																																			
