@@ -5055,6 +5055,63 @@ run(function()
 end)
 
 run(function()
+    AntiLagback = vape.Categories.Utility:CreateModule({
+        Name = 'AntiLagback',
+        Function = function(callback)
+            local Players = game:GetService("Players")
+            local RunService = game:GetService("RunService")
+            local lp = Players.LocalPlayer
+
+            local connection
+            local lastNotified = 0
+            local cooldown = 5
+            local positionThreshold = 5
+            local movementThreshold = 0.15
+
+            local lastClientPos, lastServerPos
+
+            if callback then
+                repeat task.wait() until lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                local hrp = lp.Character:WaitForChild("HumanoidRootPart")
+                lastClientPos = hrp.Position
+                lastServerPos = gethiddenproperty(hrp, "Position")
+
+                connection = RunService.RenderStepped:Connect(function()
+                    if not AntiLagback.Enabled then return end
+
+                    local char = lp.Character
+                    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+                    local hrp = char.HumanoidRootPart
+                    local clientPos = hrp.Position
+                    local serverPos = gethiddenproperty(hrp, "Position")
+                    if typeof(serverPos) ~= "Vector3" then return end
+
+                    local ghostDist = (clientPos - serverPos).Magnitude
+                    local clientMoved = (clientPos - lastClientPos).Magnitude > movementThreshold
+                    local serverStill = (serverPos - lastServerPos).Magnitude < movementThreshold
+
+                    if (ghostDist > positionThreshold or (clientMoved and serverStill)) and tick() - lastNotified > cooldown then
+                        vape:CreateNotification("LagbackDetector", "You have been lagbacked", 7)
+                        lastNotified = tick()
+                    end
+
+                    lastClientPos = clientPos
+                    lastServerPos = serverPos
+                end)
+            else
+                if connection then
+                    connection:Disconnect()
+                    connection = nil
+                end
+            end
+        end,
+        Default = false,
+        Tooltip = "Notifies you when you get lagbacked"
+    })
+end)
+																																			
+run(function()
     FPSUnlocker = vape.Categories.Utility:CreateModule({
         Name = 'FPSUnlocker',
         Function = function(callback)
