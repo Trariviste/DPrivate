@@ -1,4 +1,4 @@
-run(function()
+
     task.spawn(function()
         local Players = game:GetService("Players")
         local lp = Players.LocalPlayer
