@@ -5066,7 +5066,7 @@ run(function()
             local projectileFired = false
             local connection, remoteConn
             local lastNotified = 0
-            local cooldown = 1
+            local cooldown = 4
             local positionThreshold = 5
             local movementThreshold = 0.15
             local teleportThreshold = 20
