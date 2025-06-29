@@ -5060,50 +5060,32 @@ run(function()
         Function = function(callback)
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
             local lp = Players.LocalPlayer
-            local projectileFired = false
-            local connection, remoteConn
+
+            local connection
             local lastNotified = 0
-            local cooldown = 4
+            local cooldown = 5
             local positionThreshold = 5
             local movementThreshold = 0.15
             local teleportThreshold = 20
-            local lastClientPos, lastServerPos
 
-            -- Safe remote fetch
-            local success, projectileRemote = pcall(function()
-                return ReplicatedStorage:WaitForChild("rbxts_include", 5)
-                    :WaitForChild("node_modules", 5)
-                    :WaitForChild("@rbxts", 5)
-                    :WaitForChild("net", 5)
-                    :WaitForChild("out", 5)
-                    :WaitForChild("_NetManaged", 5)
-                    :WaitForChild("ProjectileFire", 5)
-            end)
+            local lastClientPos, lastServerPos
 
             if callback then
                 repeat task.wait() until lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                 local hrp = lp.Character:WaitForChild("HumanoidRootPart")
 
+                -- Reset positions to prevent immediate trigger
                 lastClientPos = hrp.Position
                 lastServerPos = gethiddenproperty(hrp, "Position")
-
-                -- Listen for projectile firing
-                if success and projectileRemote and projectileRemote:IsA("RemoteEvent") then
-                    remoteConn = projectileRemote.OnClientEvent:Connect(function()
-                        projectileFired = true
-                    end)
-                end
 
                 connection = RunService.RenderStepped:Connect(function()
                     if not AntiLagback.Enabled then return end
 
                     local char = lp.Character
                     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-                    local hrp = char.HumanoidRootPart
 
+                    local hrp = char.HumanoidRootPart
                     local clientPos = hrp.Position
                     local serverPos = gethiddenproperty(hrp, "Position")
                     if typeof(serverPos) ~= "Vector3" then return end
@@ -5113,18 +5095,12 @@ run(function()
                     local serverStill = (serverPos - lastServerPos).Magnitude < movementThreshold
                     local teleportDetected = (clientPos - lastClientPos).Magnitude > teleportThreshold
 
-                    local shouldNotify = (
-                        ghostDist > positionThreshold or
-                        (clientMoved and serverStill) or
-                        teleportDetected
-                    )
-
-                    if shouldNotify and not projectileFired and tick() - lastNotified > cooldown then
-                        vape:CreateNotification("LagbackDetector", "You got lagbacked", 7)
+                    if (ghostDist > positionThreshold or (clientMoved and serverStill) or teleportDetected)
+                        and tick() - lastNotified > cooldown then
+                        vape:CreateNotification("LagbackDetector", "You got lagbacked", 3)
                         lastNotified = tick()
                     end
 
-                    projectileFired = false
                     lastClientPos = clientPos
                     lastServerPos = serverPos
                 end)
@@ -5133,16 +5109,13 @@ run(function()
                     connection:Disconnect()
                     connection = nil
                 end
-                if remoteConn then
-                    remoteConn:Disconnect()
-                    remoteConn = nil
-                end
             end
         end,
         Default = false,
-        Tooltip = "Notifys you when you get lagbacked"
+        Tooltip = "Notifies you when you have been lagbacked "
     })
 end)
+
 																																			
 run(function()
     FPSUnlocker = vape.Categories.Utility:CreateModule({
