@@ -11,7 +11,6 @@
 
         vape:CreateNotification("CreamyWare", "Successfully Loaded in. Took " .. loadDuration .. " Seconds", 4)
     end)
-end)
 --vape:CreateNotification('Creamyware Discontinued', 'Creamyware will no longer be updated or maintained.', 30)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
