@@ -1,3 +1,17 @@
+run(function()
+    task.spawn(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        local startTime = tick()
+
+        repeat task.wait() until lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+
+        local endTime = tick()
+        local loadDuration = math.round((endTime - startTime) * 100) / 100
+
+        vape:CreateNotification("CreamyWare", "Successfully Loaded in. Took " .. loadDuration .. " Seconds", 4)
+    end)
+end)
 --vape:CreateNotification('Creamyware Discontinued', 'Creamyware will no longer be updated or maintained.', 30)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
