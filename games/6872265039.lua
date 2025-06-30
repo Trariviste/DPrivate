@@ -1,3 +1,4 @@
+notif('CreamyWare', 'This is a test notification dont mind it', 5, 'warning')
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local cam = workspace.CurrentCamera
