@@ -4844,7 +4844,7 @@ run(function()
             local oldcamoffset = Humanoid.CameraOffset
             local newcf = RootPart.CFrame - Vector3.new(0, Humanoid.HipHeight + (RootPart.Size.Y / 2) - 1, 0)
 
-            RootPart.CFrame = newcf * CFrame.Angles(0, 0, math.rad(180))
+            RootPart.CFrame = newcf * CFrame.Angles(0, 0, math.rad(0))
             Humanoid.CameraOffset = Vector3.new(0, -5, 0)
 
             local anim = Instance.new("Animation")
@@ -4852,7 +4852,7 @@ run(function()
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
-            loaded.TimePosition = 0.2
+            loaded.TimePosition = 0
             loaded:AdjustSpeed(0)
 
             RunService.RenderStepped:Wait()
