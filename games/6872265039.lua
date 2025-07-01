@@ -190,7 +190,7 @@ run(function()
     end)
 end)
 
-	run(function)
+	run(function()
 	local AnimationPlayer = {Enabled = false}
 	local AnimationPlayerBox = {Value = "11335949902"}
 	local AnimationPlayerSpeed = {Speed = 1}
