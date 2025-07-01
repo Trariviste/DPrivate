@@ -4848,7 +4848,7 @@ run(function()
             Humanoid.CameraOffset = Vector3.new(0, -5, 0)
 
             local anim = Instance.new("Animation")
-            anim.AnimationId = "http://www.roblox.com/asset/?id=11360825341"
+            anim.AnimationId = "http://www.roblox.com/asset/?id=11335949902"
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
