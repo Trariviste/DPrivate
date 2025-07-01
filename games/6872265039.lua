@@ -191,36 +191,42 @@ run(function()
 end)
 
 run(function()
-	local AnimationPlayer = {Enabled = false, Connections = {}}
+	local entityLibrary = shared.vapeentity
+	local lplr = game:GetService("Players").LocalPlayer
+
 	local AnimationPlayerBox = {Value = "11335949902"}
 	local AnimationPlayerSpeed = {Value = 1}
+	local AnimationPlayer = {Enabled = false, Connections = {}}
 	local playedanim
 
 	AnimationPlayer = vape.Categories.Utility:CreateModule({
 		Name = "InvisibleExploit",
 		Function = function(callback)
-			if callback then 
-				if entityLibrary and entityLibrary.isAlive and entityLibrary.isAlive() then 
-					if playedanim then 
-						playedanim:Stop() 
-						playedanim.Animation:Destroy()
-						playedanim = nil 
+			if callback then
+				if entityLibrary and entityLibrary.isAlive and entityLibrary.isAlive() then
+					if playedanim then
+						playedanim:Stop()
+						if playedanim.Animation then
+							playedanim.Animation:Destroy()
+						end
+						playedanim = nil
 					end
 
 					local anim = Instance.new("Animation")
 					local suc, id = pcall(function()
-						return string.match(game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1].AnimationId, "%?id=(%d+)")
+						local obj = game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1]
+						return string.match(obj.AnimationId, "%?id=(%d+)")
 					end)
 					if not suc or not id then
 						id = AnimationPlayerBox.Value
 					end
 					anim.AnimationId = "rbxassetid://"..id
 
-					local suc, res = pcall(function()
+					local suc2, res = pcall(function()
 						playedanim = entityLibrary.character.Humanoid.Animator:LoadAnimation(anim)
 					end)
 
-					if suc and playedanim then
+					if suc2 and playedanim then
 						lplr.Character.Humanoid.CameraOffset = Vector3.new(0, 3 / -2, 0)
 						lplr.Character.HumanoidRootPart.Size = Vector3.new(2, 3, 1.1)
 
@@ -236,7 +242,7 @@ run(function()
 							end
 						end))
 					else
-						warningNotification("AnimationPlayer", "failed to load anim : "..(res or "invalid animation id"), 5)
+						warningNotification("AnimationPlayer", "Failed to load animation: "..(res or "invalid animation id"), 5)
 					end
 				end
 
@@ -245,26 +251,29 @@ run(function()
 					task.wait(0.5)
 					if not AnimationPlayer.Enabled then return end
 
-					if playedanim then 
-						playedanim:Stop() 
-						playedanim.Animation:Destroy()
-						playedanim = nil 
+					if playedanim then
+						playedanim:Stop()
+						if playedanim.Animation then
+							playedanim.Animation:Destroy()
+						end
+						playedanim = nil
 					end
 
 					local anim = Instance.new("Animation")
 					local suc, id = pcall(function()
-						return string.match(game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1].AnimationId, "%?id=(%d+)")
+						local obj = game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1]
+						return string.match(obj.AnimationId, "%?id=(%d+)")
 					end)
 					if not suc or not id then
 						id = AnimationPlayerBox.Value
 					end
 					anim.AnimationId = "rbxassetid://"..id
 
-					local suc, res = pcall(function()
+					local suc2, res = pcall(function()
 						playedanim = entityLibrary.character.Humanoid.Animator:LoadAnimation(anim)
 					end)
 
-					if suc and playedanim then
+					if suc2 and playedanim then
 						playedanim.Priority = Enum.AnimationPriority.Action4
 						playedanim.Looped = true
 						playedanim:Play()
@@ -277,19 +286,21 @@ run(function()
 							end
 						end)
 					else
-						warningNotification("AnimationPlayer", "failed to load anim : "..(res or "invalid animation id"), 5)
+						warningNotification("AnimationPlayer", "Failed to load animation: "..(res or "invalid animation id"), 5)
 					end
 				end))
 			else
-				if playedanim then 
+				if playedanim then
 					playedanim:Stop()
-					playedanim.Animation:Destroy()
-					playedanim = nil 
+					if playedanim.Animation then
+						playedanim.Animation:Destroy()
+					end
+					playedanim = nil
 				end
 			end
 		end
 	})
-end)	
+end)
 		
 run(function()
 	local AutoGamble
