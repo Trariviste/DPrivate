@@ -199,6 +199,9 @@ run(function()
 	local AnimationPlayer = {Enabled = false, Connections = {}}
 	local playedanim
 
+	-- Safe Instance.new for executors that block it
+	local newinst = (getrenv and getrenv().Instance and getrenv().Instance.new) or (Instance and Instance.new)
+
 	AnimationPlayer = vape.Categories.Utility:CreateModule({
 		Name = "InvisibleExploit",
 		Function = function(callback)
@@ -212,7 +215,14 @@ run(function()
 						playedanim = nil
 					end
 
-					local anim = Instance.new("Animation")
+					local anim
+					if newinst then
+						anim = newinst("Animation")
+					else
+						warningNotification("AnimationPlayer", "Failed to create Animation instance", 5)
+						return
+					end
+
 					local suc, id = pcall(function()
 						local obj = game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1]
 						return string.match(obj.AnimationId, "%?id=(%d+)")
@@ -259,7 +269,14 @@ run(function()
 						playedanim = nil
 					end
 
-					local anim = Instance.new("Animation")
+					local anim
+					if newinst then
+						anim = newinst("Animation")
+					else
+						warningNotification("AnimationPlayer", "Failed to create Animation instance", 5)
+						return
+					end
+
 					local suc, id = pcall(function()
 						local obj = game:GetObjects("rbxassetid://"..AnimationPlayerBox.Value)[1]
 						return string.match(obj.AnimationId, "%?id=(%d+)")
@@ -300,7 +317,7 @@ run(function()
 			end
 		end
 	})
-end)					
+end)
 		
 run(function()
 	local AutoGamble
