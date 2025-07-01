@@ -4844,11 +4844,11 @@ run(function()
             local oldcamoffset = Humanoid.CameraOffset
             local newcf = RootPart.CFrame - Vector3.new(0, Humanoid.HipHeight + (RootPart.Size.Y / 2) - 1, 0)
 
-            RootPart.CFrame = newcf * CFrame.Angles(0, 0, math.rad(0))
+            RootPart.CFrame = newcf * CFrame.Angles(0, 0, math.rad(180))
             Humanoid.CameraOffset = Vector3.new(0, -5, 0)
 
             local anim = Instance.new("Animation")
-            anim.AnimationId = "http://www.roblox.com/asset/?id=11335949902"
+            anim.AnimationId = "http://www.roblox.com/asset/?id=11360825341"
             local loaded = Humanoid.Animator:LoadAnimation(anim)
             loaded.Priority = Enum.AnimationPriority.Action4
             loaded:Play()
@@ -4870,7 +4870,7 @@ run(function()
             local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
             if callback then
-                vape:CreateNotification('Invisibility Enabled', 'You are now invisible.', 4)
+                vape:CreateNotification('Invisibilty', 'You are now invisible.', 4)
                 modifyHRP(true)
                 setCharacterVisibility(false)
                 startLoop(character)
@@ -4894,7 +4894,7 @@ run(function()
         end
     end)
 end)
-
+																																
 run(function()
     Furryall = vape.Categories.Blatant:CreateModule({
         Name = 'Furryall',
@@ -5017,7 +5017,7 @@ run(function()
         for _, player in ipairs(Players:GetPlayers()) do
             local age = player.AccountAge
             if age < 20 then
-                vape:CreateNotification("Cheater Detected", player.Name .. " might be Cheating (Account Age: " .. tostring(age) .. ")", 5)
+                vape:CreateNotification("CreamyWare", player.Name .. " might be Cheating (Account Age: " .. tostring(age) .. ")", 5)
             end
         end
     end
@@ -5230,7 +5230,7 @@ run(function()
 		Tooltip = 'Sets your player level to 100 (client sided)',
 		Function = function(calling)
 			if calling then 
-				errorNotification("SetPlayerLevel", "This is client sided (only u will see the new level)", 3)
+				vape:CreateNotification("SetPlayerLevel", "This is client sided (only u will see the new level)", 3)
 				game.Players.LocalPlayer:SetAttribute("PlayerLevel", PlayerLevel.Value)
 			end
 		end
@@ -5481,9 +5481,9 @@ run(function()
 
 	local getY = function()
 		if oldroot and oldroot.Parent then
-			return 40
+			return -80
 		end
-		return 40
+		return -80
 	end
 
 	local tpbackup = false
