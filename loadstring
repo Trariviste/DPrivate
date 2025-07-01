@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Trariviste/DPrivate/main/NewMainScript.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Trariviste/DPrivate/refs/heads/main/NewMainScript.lua", true))()
