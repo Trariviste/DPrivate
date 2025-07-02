@@ -2131,6 +2131,190 @@ run(function()
 end)
 
 run(function()
+    Sealify = vape.Categories.Blatant:CreateModule({
+        Name = 'Sealify',
+        Function = function(callback)
+            local Players = game:GetService("Players")
+            local InsertService = game:GetService("InsertService")
+            local LocalPlayer = Players.LocalPlayer
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+            local hrp = character:WaitForChild("HumanoidRootPart")
+
+            local modelId = "rbxassetid://9314460987"
+            local insertedModel = nil
+            local nametagClone = nil
+
+            local function applySealify()
+                for _, v in ipairs(character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.Transparency = 1
+                        v.CanCollide = false
+                    elseif v:IsA("Decal") then
+                        v.Transparency = 1
+                    elseif v:IsA("Accessory") then
+                        local handle = v:FindFirstChild("Handle", true)
+                        if handle then
+                            handle.Transparency = 1
+                        end
+                    end
+                end
+
+                humanoid.NameDisplayDistance = 0
+                humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
+                local head = character:FindFirstChild("Head")
+                if head then
+                    local nametag = head:FindFirstChild("Nametag")
+                    if nametag then
+                        nametagClone = nametag:Clone()
+                        nametag:Destroy()
+                    end
+                end
+
+                local model = game:GetObjects(modelId)[1]
+                if model then
+                    model.Parent = workspace
+                    insertedModel = model
+
+                    if not model.PrimaryPart then
+                        for _, part in ipairs(model:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                model.PrimaryPart = part
+                                break
+                            end
+                        end
+                    end
+
+                    for _, part in ipairs(model:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.Size = Vector3.new(7, 6, 12)
+                        end
+                    end
+
+                    if model.PrimaryPart then
+                        model:SetPrimaryPartCFrame(hrp.CFrame)
+                        local weld = Instance.new("WeldConstraint")
+                        weld.Part0 = hrp
+                        weld.Part1 = model.PrimaryPart
+                        weld.Parent = hrp
+                    else
+                        for _, part in ipairs(model:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CFrame = hrp.CFrame
+                                local weld = Instance.new("WeldConstraint")
+                                weld.Part0 = hrp
+                                weld.Part1 = part
+                                weld.Parent = hrp
+                            end
+                        end
+                    end
+
+                    for _, item in ipairs(model:GetDescendants()) do
+                        if item:IsA("BasePart") then
+                            item.CanCollide = false
+                            item.CanTouch = false
+                            item.Transparency = 0
+                        elseif item:IsA("Decal") or item:IsA("SurfaceGui") then
+                            item.Visible = true
+                        elseif item:IsA("ParticleEmitter") or item:IsA("Beam") then
+                            item.Enabled = true
+                        end
+                    end
+                else
+                    warn("Failed to insert model.")
+                end
+            end
+
+            local function removeSealify()
+                if insertedModel then
+                    insertedModel:Destroy()
+                    insertedModel = nil
+                end
+
+                if nametagClone then
+                    local head = character:FindFirstChild("Head")
+                    if head then
+                        nametagClone.Parent = head
+                    end
+                    nametagClone = nil
+                end
+            end
+
+            if callback then
+                applySealify()
+            else
+                removeSealify()
+            end
+        end,
+        Default = false,
+        Tooltip = "Remade From Qwertyui"
+    })
+end)
+
+run(function() 
+    local function setIconID(iconId)
+        local lplr = game:GetService("Players").LocalPlayer
+        local playerlist = game:GetService("CoreGui"):FindFirstChild("PlayerList")
+        if playerlist then
+            pcall(function()
+                local playerlistplayers = playerlist.PlayerListMaster.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame
+                local targetedplr = playerlistplayers:FindFirstChild("p_" .. lplr.UserId)
+                if targetedplr then
+                    targetedplr.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = iconId
+                    notif('CustomPlayerListIcon', 'Successfuly Applied Icon!', 5, 'warning')
+                end
+            end)
+        end
+    end
+    local CustomIcon = {}
+    local IconID = {Value = ""}
+    local defaultID = "rbxassetid://18518244636"
+    CustomIcon = vape.Categories.Misc:CreateModule({
+        Name = 'CustomPlayerListIcon',
+        Function = function(calling)
+            if calling then 
+                if string.find(IconID.Value, "rbxassetid://") then
+                    setIconID(iconId)
+				elseif IconID.Value == "" then
+                    setIconID(defaultID)
+                else
+					setIconID("rbxassetid://"..IconID.Value)
+				end
+            end
+        end
+    }) 
+    IconID = CustomIcon:CreateTextBox({
+        Name = "IconID",
+        TempText = "Type here the iconID",
+        Function = function()
+			if string.find(IconID.Value, "rbxassetid://") then
+				setIconID(iconId)
+			elseif IconID.Value == "" then
+				setIconID(defaultID)
+			else
+				setIconID("rbxassetid://"..IconID.Value)
+			end
+		end
+    })
+end)
+
+run(function()
+    Bloxstrap = vape.Categories.Utility:CreateModule({
+        Name = 'Bloxstrap',
+        Function = function(callback)
+            if callback then
+               		loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/loader.lua'))({
+    HideMenu = false, -- change "false" to "true" if you want it to hide bloxstrap interface
+    Previous = 0 -- change "0" to "1" if you want to use the previous bloxstrap upd
+})
+        end,
+        Default = false,
+        Tooltip = "Credits To Qwertyui"
+    })
+end)
+																			
+run(function()
   local TexturePacks = {["Enabled"] = false}
   local packselected = {["Value"] = "OldBedwars"}
 
