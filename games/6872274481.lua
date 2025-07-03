@@ -5679,7 +5679,69 @@ antihitsettings = antihit:CreateDropdown({
     Multi = true
 })
 end)
-																																	
+
+run(function()
+    local Antihit: table = {["Enabled"] = false}
+    local TimeUp: table = {["Value"] = 0.4}
+    local Down: table = {["Value"] = 0.1}
+    local Range: table = {["Value"] = 15}
+    Antihit = vape.Categories.Blatant:CreateModule({
+        ["Name"] = "Antihit",
+        ["Function"] = function(callback: boolean): void
+            if callback then
+                spawn(function()
+                    while Antihit["Enabled"] do
+                        local character: any = lplr["Character"];
+                        if character and character:FindFirstChild("HumanoidRootPart") then
+                            local root: BasePart = character.HumanoidRootPart;
+                            for _, v in next, playersService:GetPlayers() do
+                                if v ~= lplr then
+                                    local hum: any = v["Character"]
+                                    if hum and hum:FindFirstChild("HumanoidRootPart") then
+                                        local dist: any = (root["Position"] - hum["HumanoidRootPart"]["Position"]).Magnitude
+                                        if dist <= Range["Value"] then
+                                            local org: Vector3 = root["Position"];
+                                            root.CFrame = CFrame.new(org + Vector3.new(0, -90, 0))
+                                            task.wait(0.4)
+                                            if Antihit["Enabled"] and lplr["Character"] and lplr.Character:FindFirstChild("HumanoidRootPart") then
+                                                lplr["Character"]["HumanoidRootPart"]["CFrame"] = CFrame.new(org)
+                                            end;
+                                            break;
+                                        end;
+                                    end;
+                                end;
+                            end;
+                        end;
+                        task.wait(0.1);
+                    end;
+                end);
+            end;
+        end,
+        ["Tooltip"] = "Prevents you from dying"
+    })
+    Range = Antihit:CreateSlider({
+        ["Name"] = 'Range',
+        ["Min"] = 0,
+        ["Max"] = 50,
+        ["Default"] = 15,
+        ["Function"] = function(val) end
+    })
+    TimeUp = Antihit:CreateSlider({
+        ["Name"] = 'Time Up',
+        ["Min"] = 0,
+        ["Max"] = 1,
+        ["Default"] = 0.4,
+        ["Function"] = function(val) end
+    })
+    Down = Antihit:CreateSlider({
+        ["Name"] = 'Time Down',
+        ["Min"] = 0,
+        ["Max"] = 1,
+        ["Default"] = 0.1,
+        ["Function"] = function(val) end
+    })    
+end)
+																																														
 local Fly
 run(function()
 	local Value
@@ -7177,8 +7239,8 @@ run(function()
 	Range = ProjectileAura:CreateSlider({
 		Name = 'Range',
 		Min = 1,
-		Max = 50,
-		Default = 50,
+		Max = 200,
+		Default = 200,
 		Suffix = function(val)
 			return val == 1 and 'stud' or 'studs'
 		end
