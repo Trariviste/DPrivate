@@ -2252,53 +2252,6 @@ run(function()
     })
 end)
 
-run(function() 
-    local function setIconID(iconId)
-        local lplr = game:GetService("Players").LocalPlayer
-        local playerlist = game:GetService("CoreGui"):FindFirstChild("PlayerList")
-        if playerlist then
-            pcall(function()
-                local playerlistplayers = playerlist.PlayerListMaster.OffsetFrame.PlayerScrollList.SizeOffsetFrame.ScrollingFrameContainer.ScrollingFrameClippingFrame.ScollingFrame.OffsetUndoFrame
-                local targetedplr = playerlistplayers:FindFirstChild("p_" .. lplr.UserId)
-                if targetedplr then
-                    targetedplr.ChildrenFrame.NameFrame.BGFrame.OverlayFrame.PlayerIcon.Image = iconId
-                    notif('CustomPlayerListIcon', 'Successfuly Applied Icon!', 5, 'warning')
-                end
-            end)
-        end
-    end
-    local CustomIcon = {}
-    local IconID = {Value = ""}
-    local defaultID = "rbxassetid://18518244636"
-    CustomIcon = vape.Categories.Misc:CreateModule({
-        Name = 'CustomPlayerListIcon',
-        Function = function(calling)
-            if calling then 
-                if string.find(IconID.Value, "rbxassetid://") then
-                    setIconID(iconId)
-				elseif IconID.Value == "" then
-                    setIconID(defaultID)
-                else
-					setIconID("rbxassetid://"..IconID.Value)
-				end
-            end
-        end
-    }) 
-    IconID = CustomIcon:CreateTextBox({
-        Name = "IconID",
-        TempText = "Type here the iconID",
-        Function = function()
-			if string.find(IconID.Value, "rbxassetid://") then
-				setIconID(iconId)
-			elseif IconID.Value == "" then
-				setIconID(defaultID)
-			else
-				setIconID("rbxassetid://"..IconID.Value)
-			end
-		end
-    })
-end)
-
 run(function()
     Bloxstrap = vape.Categories.Utility:CreateModule({
         Name = 'Bloxstrap',
