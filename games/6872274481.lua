@@ -2251,21 +2251,6 @@ run(function()
         Tooltip = "Remade From Qwertyui"
     })
 end)
-
-run(function()
-    Bloxstrap = vape.Categories.Utility:CreateModule({
-        Name = 'Bloxstrap',
-        Function = function(callback)
-            if callback then
-               		loadstring(game:HttpGet('https://raw.githubusercontent.com/new-qwertyui/Bloxstrap/main/loader.lua'))({
-    HideMenu = false, -- change "false" to "true" if you want it to hide bloxstrap interface
-    Previous = 0 -- change "0" to "1" if you want to use the previous bloxstrap upd
-})
-        end,
-        Default = false,
-        Tooltip = "Credits To Qwertyui"
-    })
-end)
 																			
 run(function()
   local TexturePacks = {["Enabled"] = false}
