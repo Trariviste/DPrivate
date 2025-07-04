@@ -12758,3 +12758,89 @@ end
         Tooltip = ""
     })
 end)
+
+run(function()
+	local BypassMethod = {Value = "LookVector"}
+	local DelayToggle = {Enabled = false}
+	local MultiplyDirection = {Value = 0.01}
+	local DivideDirection = {Value = 0.01}
+	local DivideVal = {Value = 2}
+	local direction
+	local ScytheTick = {Value = 2}
+	local ScytheDelay = {Value = 0}
+	local NetworkHelper = {Enabled = false}
+	local NetworkDelay = {Value = 0.01}
+	local networkbypass = true
+	local networkticks = 0
+	Disabler = vape.Categories.Utility:CreateModule({
+		Name = "AnticheatBypass",
+		Function = function(callback)
+			--[[if callback then
+				if BypassMethod.Value == "LookVector + MoveDirection" then
+					warningNotification("Vape", "This method is extremely buggy, prone to low-speed.", 8)
+				end
+				RunLoops:BindToStepped('Disabler', function()
+					task.spawn(function()
+						if entityLibrary.isAlive then
+							task.wait(ScytheDelay.Value)
+							local item = getItemNear("scythe")
+							if ScytheToggle.Enabled and item and lplr.Character.HandInvItem.Value == item.tool and bedwars.CombatController then
+								if NetworkHelper.Enabled and networkbypass == true and networkticks >= ScytheSpeed.Value then
+									networkticks = networkticks + 1
+									pcall(function()
+										sethiddenproperty(entityLibrary.character.HumanoidRootPart, "NetworkIsSleeping", false)
+										networkticks = 0
+									end)
+								else
+									pcall(function()
+										sethiddenproperty(entityLibrary.character.HumanoidRootPart, "NetworkIsSleeping", true)
+									end)
+								end
+								if BypassMethod.Value == "LookVector" then
+									direction = entityLibrary.character.HumanoidRootPart.CFrame.LookVector
+								elseif BypassMethod.Value == "MoveDirection" then
+									direction = entityLibrary.character.Humanoid.MoveDirection
+								elseif BypassMethod.Value == "LookVector + MoveDirection" then
+									direction = entityLibrary.character.HumanoidRootPart.CFrame.LookVector and entityLibrary.character.Humanoid.MoveDirection / 1
+								end
+								if DivideDirection.Value ~= 0 then
+									bedwars.Client:Get("ScytheDash"):SendToServer({direction = direction / DivideDirection.Value * MultiplyDirection.Value})
+								else
+									bedwars.Client:Get("ScytheDash"):SendToServer({direction = direction * MultiplyDirection.Value})
+								end
+								store.scythe = tick() + ScytheTick.Value / 0.001
+							end
+						end
+					end)
+				end)
+			else
+				RunLoops:UnbindFromStepped('Disabler')
+				sethiddenproperty(entityLibrary.character.HumanoidRootPart, "NetworkIsSleeping", false)
+				networkticks = 0
+			end]]
+		end,
+		HoverText = "Float disabler with Scythe and Zephyr\nAllows up to 45-80 speed depending on what BypassMethod you use"
+		--[[ExtraText = function()
+			return SpeedBypassMethod.Value.." ("..tostring(ZephyrSpeed.Value + ScytheSpeed.Value + ScytheFlySpeed.Value + SpeedValue.Value)..")" 
+		end]]
+	})
+	ZephyrToggle = Disabler.CreateToggle({
+        Name = "Zephyr",
+		HoverText = "Turns on Zephyr bypass",
+        Default = false,
+        Function = function(calling)
+			pcall(function()
+				ZephyrSpeed.Object.Visible = calling 
+			end)
+		end
+    })
+	ZephyrSpeed = Disabler.CreateSlider({
+        Name = "ZephyrSpeed",
+        Min = 0,
+        Max = 20,
+        Default = 20,
+        Function = function(val) 
+            ZephyrSpeed.Value = val
+        end
+    })
+end	--<<this was missing																																																																																																																																																																																																																																									
