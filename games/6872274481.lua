@@ -12734,27 +12734,41 @@ run(function()
 		Visible = false,
 		Darker = true
 	})
-end)																																																																																																																																																																																
+end)
 
+
+local HackerDetector
 run(function()
-    YuziExploit = vape.Categories.Utility:CreateModule({
-        Name = 'YuziExploit',
-        Function = function(callback)
-            if callback then
-                       while true do
-    game:GetService("ReplicatedStorage")
-        :WaitForChild("events-@easy-games/game-core:shared/game-core-networking@getEvents.Events")
-        :WaitForChild("useAbility")
-        :FireServer(
-            "dash",
-            {
-                weapon = "wood_dao"
-            }
-        )
-    task.wait()
-end
+    local flagged = {}
+
+    HackerDetector = vape.Categories.Utility:CreateModule({
+        Name = "HackerDetector",
+        Function = function(enabled)
+            if enabled then
+                task.spawn(function()
+                    while HackerDetector.Enabled do
+                        for _, player in pairs(game.Players:GetPlayers()) do
+                            if player ~= game.Players.LocalPlayer and player.Character then
+                                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                                if hrp and not flagged[player] then
+                                    local vel = hrp.AssemblyLinearVelocity
+                                    local horizontalSpeed = Vector3.new(vel.X, 0, vel.Z).Magnitude
+                                    local verticalSpeed = math.abs(vel.Y)
+
+                                    if horizontalSpeed > 28 or verticalSpeed > 30 then
+                                        flagged[player] = true
+                                        notif("Hackerdetector", player.Name .. " is using exploits!", 60, "warning")
+                                    end
+                                end
+                            end
+                        end
+                        task.wait(0.1)
+                    end
+                end)
+            else
+                flagged = {}
+            end
         end,
-        Default = false,
-        Tooltip = ""
+        Tooltip = "Detects Hackers"
     })
 end)
