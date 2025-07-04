@@ -12736,39 +12736,40 @@ run(function()
 	})
 end)
 
-
-local HackerDetector
+local CheaterDetector
 run(function()
     local flagged = {}
 
-    HackerDetector = vape.Categories.Utility:CreateModule({
-        Name = "HackerDetector",
+    CheaterDetector = vape.Categories.Utility:CreateModule({
+        Name = "CheaterDetector",
         Function = function(enabled)
             if enabled then
-                task.spawn(function()
-                    while HackerDetector.Enabled do
-                        for _, player in pairs(game.Players:GetPlayers()) do
-                            if player ~= game.Players.LocalPlayer and player.Character then
-                                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-                                if hrp and not flagged[player] then
-                                    local vel = hrp.AssemblyLinearVelocity
-                                    local horizontalSpeed = Vector3.new(vel.X, 0, vel.Z).Magnitude
-                                    local verticalSpeed = math.abs(vel.Y)
-
-                                    if horizontalSpeed > 28 or verticalSpeed > 30 then
-                                        flagged[player] = true
-                                        notif("Hackerdetector", player.Name .. " is using exploits!", 60, "warning")
-                                    end
+                for _, player in pairs(game.Players:GetPlayers()) do
+                    if player ~= game.Players.LocalPlayer and not flagged[player] then
+                        local accountAge = player.AccountAge or 0
+                        if accountAge < 10 then
+                            flagged[player] = true
+                            notif("Cheaterdetector", player.Name .. " might be cheating (" .. accountAge .. " days)", 10, "warning")
+                        end
+                    end
+                end
+                game.Players.PlayerAdded:Connect(function(player)
+                    if player ~= game.Players.LocalPlayer then
+                        task.delay(5, function() 
+                            if not flagged[player] then
+                                local accountAge = player.AccountAge or 0
+                                if accountAge < 10 then
+                                    flagged[player] = true
+                                    notif("Cheaterdetector", player.Name .. " might be cheating (" .. accountAge .. " days)", 10, "warning")
                                 end
                             end
-                        end
-                        task.wait(0.1)
+                        end)
                     end
                 end)
             else
                 flagged = {}
             end
         end,
-        Tooltip = "Detects Hackers"
+        Tooltip = "Detects players that might be cheating"
     })
 end)
