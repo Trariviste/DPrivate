@@ -5701,7 +5701,7 @@ run(function()
                                         local dist: any = (root["Position"] - hum["HumanoidRootPart"]["Position"]).Magnitude
                                         if dist <= Range["Value"] then
                                             local org: Vector3 = root["Position"];
-                                            root.CFrame = CFrame.new(org + Vector3.new(0, 90, 0))
+                                            root.CFrame = CFrame.new(org + Vector3.new(0, -90, 0))
                                             task.wait(0.4)
                                             if Antihit["Enabled"] and lplr["Character"] and lplr.Character:FindFirstChild("HumanoidRootPart") then
                                                 lplr["Character"]["HumanoidRootPart"]["CFrame"] = CFrame.new(org)
