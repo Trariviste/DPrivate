@@ -12735,3 +12735,26 @@ run(function()
 		Darker = true
 	})
 end)																																																																																																																																																																																
+
+run(function()
+    YuziExploit = vape.Categories.Utility:CreateModule({
+        Name = 'YuziExploit',
+        Function = function(callback)
+            if callback then
+                       while true do
+    game:GetService("ReplicatedStorage")
+        :WaitForChild("events-@easy-games/game-core:shared/game-core-networking@getEvents.Events")
+        :WaitForChild("useAbility")
+        :FireServer(
+            "dash",
+            {
+                weapon = "wood_dao"
+            }
+        )
+    task.wait()
+end
+        end,
+        Default = false,
+        Tooltip = ""
+    })
+end)
