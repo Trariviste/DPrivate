@@ -12633,3 +12633,100 @@ run(function()
 		end
 	})
 end)
+
+local YuziFly
+run(function()
+	local up, down = 0, 0
+	local JumpTick, JumpSpeed, Direction = tick(), 0
+	local delayFlyUntil = 0
+
+	YuziFly = vape.Categories.Blatant:CreateModule({
+		Name = "YuziFly",
+		Function = function(enabled)
+			frictionTable.YuziFly = enabled or nil
+			updateVelocity()
+			if enabled then
+				JumpTick = tick()
+				JumpSpeed = 0
+				Direction = nil
+				delayFlyUntil = 0
+				up, down = 0, 0
+
+				local daoList = {
+					["wood_dao"] = true,
+					["stone_dao"] = true,
+					["iron_dao"] = true,
+					["diamond_dao"] = true,
+					["emerald_dao"] = true
+				}
+
+				local item = store.hand and store.hand.tool
+				if item and daoList[item.Name] and bedwars.AbilityController:canUseAbility("dash") then
+					local root = entitylib.character.RootPart
+					local pos = root.Position
+					local dir = root.CFrame.LookVector
+
+					bedwars.SwordController.lastAttack = workspace:GetServerTimeNow()
+					switchItem(item, 0.1)
+
+					replicatedStorage["events-@easy-games/game-core:shared/game-core-networking@getEvents.Events"]
+						.useAbility:FireServer("dash", {
+							direction = dir,
+							origin = pos,
+							weapon = item.Name
+						})
+
+					JumpSpeed = 4.5
+					JumpTick = tick() + 2.4
+					Direction = Vector3.new(dir.X, 0, dir.Z).Unit
+					delayFlyUntil = tick() + 0.2
+				end
+
+				YuziFly:Clean(runService.PreSimulation:Connect(function()
+					if not entitylib.isAlive then return end
+					local root = entitylib.character.RootPart
+					if not isnetworkowner(root) then return end
+
+					local moveDir = entitylib.character.Humanoid.MoveDirection
+					local flyVec = moveDir * getSpeed()
+					local yVel = (up + down) * 45
+
+					if JumpTick > tick() and Direction then
+						flyVec += Direction * JumpSpeed
+					end
+
+					if tick() >= delayFlyUntil then
+						root.AssemblyLinearVelocity = flyVec + Vector3.new(0, yVel, 0)
+					end
+				end))
+
+				YuziFly:Clean(inputService.InputBegan:Connect(function(input)
+					if not inputService:GetFocusedTextBox() then
+						if input.KeyCode == Enum.KeyCode.Space then
+							up = 1
+						elseif input.KeyCode == Enum.KeyCode.LeftShift then
+							down = -1
+						end
+					end
+				end))
+
+				YuziFly:Clean(inputService.InputEnded:Connect(function(input)
+					if input.KeyCode == Enum.KeyCode.Space then
+						up = 0
+					elseif input.KeyCode == Enum.KeyCode.LeftShift then
+						down = 0
+					end
+				end))
+			else
+				JumpSpeed = 0
+				Direction = nil
+				delayFlyUntil = 0
+				up, down = 0, 0
+			end
+		end,
+		ExtraText = function()
+			return "Heatseeker"
+		end,
+		Tooltip = "Lets you fly longer with yuzi (Discovered By Sus)"
+	})
+end)																																																																																																																																																																																	
