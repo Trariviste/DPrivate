@@ -12825,9 +12825,15 @@ run(function()
 								for _, part in pairs(tool:GetDescendants()) do
 									if part:IsA("Part") or part:IsA("MeshPart") or part:IsA("UnionOperation") then
 										part.Transparency = 1
+										part.CanCollide = false -- no collision
 									end
 								end
 								local model = v.model:Clone()
+								for _, part in pairs(model:GetDescendants()) do
+									if part:IsA("BasePart") then
+										part.CanCollide = false -- no collision
+									end
+								end
 								model.CFrame = tool:WaitForChild("Handle").CFrame * v.offset
 								model.CFrame *= CFrame.Angles(0, math.rad(-50), 0)
 								model.Parent = tool
@@ -12839,9 +12845,15 @@ run(function()
 								for _, part in pairs(tool2:GetDescendants()) do
 									if part:IsA("Part") or part:IsA("MeshPart") or part:IsA("UnionOperation") then
 										part.Transparency = 1
+										part.CanCollide = false -- no collision
 									end
 								end
 								local model2 = v.model:Clone()
+								for _, part in pairs(model2:GetDescendants()) do
+									if part:IsA("BasePart") then
+										part.CanCollide = false -- no collision
+									end
+								end
 								model2.Anchored = false
 								model2.CFrame = tool2:WaitForChild("Handle").CFrame * v.offset
 								model2.CFrame *= CFrame.Angles(0, math.rad(-50), 0)
@@ -12869,4 +12881,4 @@ run(function()
 		end,
 		Tooltip = "TexturePack"
 	})
-end)																																																							
+end)
