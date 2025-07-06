@@ -12706,7 +12706,7 @@ run(function()
 			end
 		end,
 		ExtraText = function()
-			return 'CFrame'
+			return 'Heetseeker'
 		end,
 		Tooltip = 'Increases your movement with various methods.'
 	})
