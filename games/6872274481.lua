@@ -12944,21 +12944,28 @@ run(function() -- thank you SystemXVoid for letting me use this
 end)
 
 run(function()
+    local blinkLoop
     Disabler = vape.Categories.Utility:CreateModule({
         Name = 'Disabler',
         Function = function(callback)
             if callback then
-               		task.spawn(function()
-    while true do
-        local blink = vape.Modules.Blink
-        if blink then
-            blink.Toggle() -- Turns it ON if OFF, or OFF if ON
-        end
-        task.wait(0.5) -- Delay between toggles, adjust as needed
-    end
-end)
+                blinkLoop = task.spawn(function()
+                    while Disabler.Enabled do
+                        local blink = vape.Modules.Blink
+                        if blink then
+                            blink.Toggle()
+                        end
+                        task.wait(0.5)
+                    end
+                end)
+            else
+                if blinkLoop then
+                    task.cancel(blinkLoop)
+                    blinkLoop = nil
+                end
+            end
         end,
         Default = false,
         Tooltip = "Only Works With Kits"
     })
-end)																																																																																																																																																																																					
+end)
