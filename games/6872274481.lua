@@ -12955,7 +12955,7 @@ run(function()
                         if blink then
                             blink:Toggle()
                         end
-                        task.wait(0.6)
+                        task.wait(0.4)
                     end
                 end)
             else
