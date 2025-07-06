@@ -12896,7 +12896,7 @@ run(function() -- thank you SystemXVoid for letting me use this
 	   }
 	local function addEnchants()
 	end
-    enchantexploit = GuiLibrary.ObjectsThatCanBeSaved.BlatantWindow.Api.CreateOptionsButton({
+    enchantexploit = vape.Categories.Render:CreateModule({
         Name = 'Dupe',
         HoverText = 'Gives u stuff.',
         Function = function(calling)
