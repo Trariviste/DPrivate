@@ -12941,9 +12941,4 @@ run(function() -- thank you SystemXVoid for letting me use this
 			end)
         end
     })
-	local Credits
-	Credits = enchantexploit.CreateCredits({
-        Name = 'CreditsButtonInstance',
-        Credits = 'Render/CatV5'
-    })
 end)
