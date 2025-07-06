@@ -12953,9 +12953,9 @@ run(function()
                     while Disabler.Enabled do
                         local blink = vape.Modules.Blink
                         if blink then
-                            blink:Toggle() -- Correct method call with colon
+                            blink:Toggle()
                         end
-                        task.wait(0.0)
+                        task.wait(0.6)
                     end
                 end)
             else
