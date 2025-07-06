@@ -12955,7 +12955,7 @@ run(function()
                         if blink then
                             blink:Toggle() -- Correct method call with colon
                         end
-                        task.wait(0.5)
+                        task.wait(0.2)
                     end
                 end)
             else
