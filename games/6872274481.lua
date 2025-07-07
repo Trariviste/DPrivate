@@ -12971,27 +12971,32 @@ run(function()
 end)
 
 run(function()
-	local Value
-	local VerticalValue
-	local WallCheck
+	local FlySpeed
+	local VerticalSpeed
+
 	local rayCheck = RaycastParams.new()
-	rayCheck.RespectCanCollide = true
-	local overlapCheck = OverlapParams.new()
-	overlapCheck.RespectCanCollide = true
-	local up, down = 0, 0
-	local success, proper = false, true
-	local clone, oldroot, hip, valid
-	local function doClone()
-		if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 then
+	local reduceAirTime = false
+
+	local oldroot
+	local clone
+
+	local up = 0
+	local down = 0
+	local hip = 2
+
+	local function createClone()
+		if entitylib.isAlive and entitylib.character.Humanoid.Health > 0 and (not oldroot or not oldroot.Parent) then
 			hip = entitylib.character.Humanoid.HipHeight
 			oldroot = entitylib.character.HumanoidRootPart
 			if not lplr.Character.Parent then return false end
 			lplr.Character.Parent = game
 			clone = oldroot:Clone()
 			clone.Parent = lplr.Character
+			oldroot.CanCollide = true
 			oldroot.Parent = gameCamera
+			store.rootpart = clone
+			Instance.new('Highlight', oldroot)
 			bedwars.QueryUtil:setQueryIgnored(oldroot, true)
-			clone.CFrame = oldroot.CFrame
 			lplr.Character.PrimaryPart = clone
 			lplr.Character.Parent = workspace
 			for _, v in lplr.Character:GetDescendants() do
@@ -13004,125 +13009,120 @@ run(function()
 		end
 		return false
 	end
-	local function revertClone()
+
+	local function destroyClone()
 		if not oldroot or not oldroot.Parent or not entitylib.isAlive then return false end
 		lplr.Character.Parent = game
 		oldroot.Parent = lplr.Character
 		lplr.Character.PrimaryPart = oldroot
 		lplr.Character.Parent = workspace
-		oldroot.CanCollide = true
 		for _, v in lplr.Character:GetDescendants() do
 			if v:IsA('Weld') or v:IsA('Motor6D') then
 				if v.Part0 == clone then v.Part0 = oldroot end
 				if v.Part1 == clone then v.Part1 = oldroot end
 			end
 		end
-		local oldclonepos = clone.Position.Y
 		if clone then
 			clone:Destroy()
 			clone = nil
 		end
-		local origcf = {oldroot.CFrame:GetComponents()}
-		if valid then origcf[2] = oldclonepos end
-		oldroot.CFrame = CFrame.new(unpack(origcf))
+		entitylib.character.Humanoid.HipHeight = hip or 2
 		oldroot.Transparency = 1
 		oldroot = nil
-		entitylib.character.Humanoid.HipHeight = hip or 2
+		store.rootpart = nil
 	end
 
 	InfiniteFly = vape.Categories.Blatant:CreateModule({
-		Name = 'InfiniteFly',
-		Function = function(callback)
-			frictionTable.InfiniteFly = callback or nil
-			updateVelocity()
-			if callback then
-				if vape.Modules.Invisible and vape.Modules.Invisible.Enabled then
-					vape.Modules.Invisible:Toggle()
-					notif('InfiniteFly', 'Invisible cannot be used with InfiniteFly', 3, 'warning')
+		Name = 'Infinite Fly',
+		Tooltip = 'Makes you go zoom.',
+		Function = function(call)
+			if call then
+				if not entitylib.isAlive or FlyLandTick > tick() or not isnetworkowner(entitylib.character.RootPart) then
+					return InfiniteFly:Toggle()
 				end
-				if not proper then
-					notif('InfiniteFly', 'Broken state detected', 3, 'alert')
-					InfiniteFly:Toggle()
-					return
+				local a, b = pcall(createClone)
+				if not a then
+					return InfiniteFly:Toggle()
 				end
-				success = doClone()
-				if not success then
-					InfiniteFly:Toggle()
-					return
-				end
-				InfiniteFly:Clean(runService.PreSimulation:Connect(function(dt)
-					if entitylib.isAlive then
-						local root = entitylib.character.RootPart
-						local moveDirection = entitylib.character.Humanoid.MoveDirection
-						local velo = getSpeed()
-						local destination = (moveDirection * math.max(Value.Value - velo, 0) * dt)
-
-						rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera}
-						if WallCheck.Enabled then
-							local ray = workspace:Raycast(root.Position, destination, rayCheck)
-							if ray then 
-								destination = ((ray.Position + ray.Normal) - root.Position) 
-							end
-						end
-
-						-- U CAN CHANGE THE Y VALUE HERE SUS!!!!!!!!!!!!!!
-						destination = Vector3.new(destination.X, -90 - root.Position.Y, destination.Z)
-						root.CFrame += destination
-						root.AssemblyLinearVelocity = (moveDirection * velo)
-
-						local speedCFrame = {oldroot.CFrame:GetComponents()}
-						if isnetworkowner(oldroot) then
-							speedCFrame[1] = clone.CFrame.X
-							speedCFrame[2] = -90
-							speedCFrame[3] = clone.CFrame.Z
-							oldroot.CFrame = CFrame.new(unpack(speedCFrame))
-							oldroot.Velocity = Vector3.new(clone.Velocity.X, 0, clone.Velocity.Z)
-						else
-							speedCFrame[2] = -90
-							clone.CFrame = CFrame.new(unpack(speedCFrame))
+				rayCheck.FilterDescendantsInstances = {lplr.Character, AntiFallPart, oldroot, clone}
+				local currenty = entitylib.character.RootPart.Position.Y
+				InfiniteFly:Clean(inputService.InputBegan:Connect(function(input)
+					if not inputService:GetFocusedTextBox() then
+						if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
+							up = 1
+						elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
+							down = -1
 						end
 					end
 				end))
-				up, down = 0, 0
-			else
-				if success and clone and oldroot and proper then
-					proper = false
-					local origcf = {clone.CFrame:GetComponents()}
-					origcf[1] = oldroot.Position.X
-					origcf[2] = -90
-					origcf[3] = oldroot.Position.Z
-					oldroot.CanCollide = true
-					oldroot.Transparency = 0
-					oldroot.Velocity = clone.Velocity * Vector3.new(1, 0, 1)
-					oldroot.CFrame = CFrame.new(unpack(origcf))
-					task.delay(1.1, function()
-						notif('InfiniteFly', 'Landed!', 1)
-						proper = true
-						if oldroot and clone then 
-							revertClone() 
-						end
-					end)
-				end
-			end
-		end,
-		ExtraText = function() 
-			return 'Heatseeker' 
-		end,
-		Tooltip = 'Fly fixed at Y = -90.'
-	})
+				InfiniteFly:Clean(inputService.InputEnded:Connect(function(input)
+					if input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.ButtonA then
+						up = 0
+					elseif input.KeyCode == Enum.KeyCode.LeftShift or input.KeyCode == Enum.KeyCode.ButtonL2 then
+						down = 0
+					end
+				end))
+				InfiniteFly:Clean(runService.PreSimulation:Connect(function(delta)
+					if not entitylib.isAlive or not clone or not clone.Parent or not isnetworkowner(oldroot) then
+						return InfiniteFly:Toggle()
+					end
+					FlyLandTick = tick() + 1
+					local mass = 1.5 + ((up + down) * VerticalSpeed.Value)
+					local moveDir = entitylib.character.Humanoid.MoveDirection
+					local velo = getSpeed()
+					local destination = (moveDir * math.max(FlySpeed.Value - velo, 0) * delta)
+					local airtime = reduceAirTime and 0 or (tick() - entitylib.character.AirTime)
+					clone.CFrame += destination
+					clone.AssemblyLinearVelocity = (moveDir * velo) + Vector3.new(0, mass, 0)
 
-	Value = InfiniteFly:CreateSlider({
+					local check1 = (not workspace:Raycast(clone.Position, Vector3.new(0, -1000, 0), rayCheck) and workspace:Raycast(oldroot.Position + (oldroot.CFrame.LookVector * 1.3), Vector3.new(0, -1000, 0), rayCheck))
+					local check2 = (workspace:Raycast(clone.Position, Vector3.new(0, -1000, 0), rayCheck) and workspace:Raycast(oldroot.Position, Vector3.new(0, -1000, 0), rayCheck))
+
+					oldroot.CFrame = (check1 and not check2) and oldroot.CFrame or CFrame.lookAlong(Vector3.new(clone.Position.X, oldroot.Position.Y, clone.Position.Z), clone.CFrame.LookVector)
+					if (airtime > 1.2 or workspace:Raycast(clone.Position, Vector3.new(0, -1000, 0), rayCheck)) and not check1 then
+						local ray = workspace:Raycast(clone.Position, Vector3.new(0, -1000, 0), rayCheck)
+						if ray then
+							oldroot.CFrame = CFrame.lookAlong(Vector3.new(oldroot.Position.X, ray.Position.Y + entitylib.character.HipHeight, oldroot.Position.Z), clone.CFrame.LookVector)
+							oldroot.Velocity = Vector3.zero
+						else
+							reduceAirTime = true
+						end
+					elseif airtime < 0.7 and oldroot.CFrame.Y < (currenty - 100) then
+						oldroot.CFrame += Vector3.new(0, currenty + 250, 0)
+						reduceAirTime = false
+					end
+				end))
+			else
+				notif('InfiniteFly', 'Waiting 1.1s to land', 1.1, 'alert')
+				up = 0
+				down = 0
+				FlyLandTick = tick() + 1.1
+				repeat 
+					if not entitylib.isAlive or not isnetworkowner(oldroot) then 
+						break 
+					end
+					local ray = workspace:Raycast(oldroot.Position, Vector3.new(0, -1000, 0), rayCheck) 
+					if ray then
+						oldroot.Velocity = Vector3.zero
+						oldroot.CFrame = CFrame.lookAlong(Vector3.new(oldroot.Position.X, ray.Position.Y + entitylib.character.HipHeight, oldroot.Position.Z), oldroot.CFrame.LookVector)
+					end
+					task.wait() 
+				until tick() > FlyLandTick
+				destroyClone()
+				notif('InfiniteFly', 'Landed', 8, 'alert')
+			end
+		end
+	})
+	FlySpeed = InfiniteFly:CreateSlider({
 		Name = 'Speed',
 		Min = 1,
 		Max = 23,
-		Default = 23,
-		Suffix = function(val) 
-			return val == 1 and 'stud' or 'studs' 
-		end
+		Default = 23
 	})
-
-	WallCheck = InfiniteFly:CreateToggle({
-		Name = 'Wall Check',
-		Default = true
+	VerticalSpeed = InfiniteFly:CreateSlider({
+		Name = 'Vertical Speed',
+		Min = 1,
+		Max = 150,
+		Default = 70
 	})
-end)																																																																																																																																																																																						
+end)
