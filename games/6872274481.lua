@@ -13397,7 +13397,7 @@ run(function()
 									local pingspike = didpingspike()
 									if pingspike then
 										if AnticheatBypassNotification["Enabled"] then
-											notif("AnticheatBypass", Lagspike Detected : "..pingspike, 10, "warning")
+											notif("AnticheatBypass", "Lagspike Detected : "..pingspike" , 10, "warning")
 										end
 									else
 										if matchState ~= 2 and notlasso() and (not recenttp) then
@@ -13418,7 +13418,7 @@ run(function()
 							end
 							if (tick() - lagbacktime) >= 10 and (not lagbacknotification) then
 								lagbacknotification = true
-								notif("AnticheatBypass", You have been lagbacked for a awfully long time, 10, "warning")
+								notif("AnticheatBypass", "You have been lagbacked for a awfully long time" , 10, "warning")
 							end
 							cloneroot.Velocity = Vector3.zero
 							oldroot.Velocity = Vector3.zero
@@ -13507,7 +13507,7 @@ run(function()
 			if root ~= nil and head ~= nil then
 				task.spawn(disablestuff)
 			else
-				notif("AnticheatBypass", ur root / head no load L, 30, "warning")
+				notif("AnticheatBypass", "ur root / head no load L" , 30, "warning")
 			end
 		end)
 		anticheatconnection = lplr.CharacterAdded:Connect(function(char)
@@ -13540,7 +13540,7 @@ run(function()
 				if root ~= nil and head ~= nil then
 					task.spawn(disablestuff)
 				else
-					notif("AnticheatBypass", ur root / head no load L, 30, "warning")
+					notif("AnticheatBypass", "ur root / head no load L" , 30, "warning")
 				end
 			end)
 		end)
