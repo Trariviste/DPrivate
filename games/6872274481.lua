@@ -13126,3 +13126,74 @@ run(function()
 		Default = 70
 	})
 end)
+
+run(function()
+	local InvisibleExploit
+	local AnimationIdBox = {Value = "11335949902"}
+	local playedAnim
+
+	InvisibleExploit = vape.Categories.Utility:CreateModule({
+		Name = "InvisibleExploit",
+		Function = function(callback)
+			if callback then
+				local function playAnimation()
+					if not entityLibrary.isAlive then return end
+					if playedAnim then
+						playedAnim:Stop()
+						if playedAnim.Animation then playedAnim.Animation:Destroy() end
+						playedAnim = nil
+					end
+
+					local anim = Instance.new("Animation")
+					local success, animObj = pcall(function()
+						local obj = game:GetObjects("rbxassetid://"..AnimationIdBox.Value)[1]
+						return string.match(obj.AnimationId or "", "%d+") or AnimationIdBox.Value
+					end)
+
+					if not success then
+						anim.AnimationId = "rbxassetid://"..AnimationIdBox.Value
+					else
+						anim.AnimationId = "rbxassetid://"..animObj
+					end
+
+					local loaded, result = pcall(function()
+						return entityLibrary.character.Humanoid.Animator:LoadAnimation(anim)
+					end)
+
+					if loaded and result then
+						playedAnim = result
+						lplr.Character.Humanoid.CameraOffset = Vector3.new(0, -1.5, 0)
+						lplr.Character.HumanoidRootPart.Size = Vector3.new(2, 3, 1.1)
+						playedAnim.Priority = Enum.AnimationPriority.Action4
+						playedAnim.Looped = true
+						playedAnim:Play()
+						playedAnim:AdjustSpeed(0)
+						table.insert(InvisibleExploit.Connections, playedAnim.Stopped:Connect(function()
+							if InvisibleExploit.Enabled then
+								InvisibleExploit.ToggleButton(false)
+								InvisibleExploit.ToggleButton(false)
+							end
+						end))
+					else
+						warningNotification("InvisibleExploit", "failed to load anim : "..(result or "invalid animation id"), 5)
+					end
+				end
+
+				playAnimation()
+
+				table.insert(InvisibleExploit.Connections, lplr.CharacterAdded:Connect(function()
+					repeat task.wait() until entityLibrary.isAlive or not InvisibleExploit.Enabled
+					task.wait(0.5)
+					if not InvisibleExploit.Enabled then return end
+					playAnimation()
+				end))
+			else
+				if playedAnim then
+					playedAnim:Stop()
+					if playedAnim.Animation then playedAnim.Animation:Destroy() end
+					playedAnim = nil
+				end
+			end
+		end
+	})
+end)																																																																																																																																																																																							
