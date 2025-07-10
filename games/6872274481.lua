@@ -13132,12 +13132,17 @@ run(function()
 	local AnimationIdBox = {Value = "11335949902"}
 	local playedAnim
 
+	local function isAlive()
+		return entityLibrary and entityLibrary.character and entityLibrary.character:FindFirstChild("Humanoid") and entityLibrary.character:FindFirstChild("HumanoidRootPart")
+	end
+
 	InvisibleExploit = vape.Categories.Utility:CreateModule({
 		Name = "InvisibleExploit",
 		Function = function(callback)
 			if callback then
 				local function playAnimation()
-					if not entityLibrary.isAlive then return end
+					if not isAlive() then return end
+
 					if playedAnim then
 						playedAnim:Stop()
 						if playedAnim.Animation then playedAnim.Animation:Destroy() end
@@ -13145,29 +13150,32 @@ run(function()
 					end
 
 					local anim = Instance.new("Animation")
-					local success, animObj = pcall(function()
+					local success, animId = pcall(function()
 						local obj = game:GetObjects("rbxassetid://"..AnimationIdBox.Value)[1]
 						return string.match(obj.AnimationId or "", "%d+") or AnimationIdBox.Value
 					end)
 
-					if not success then
-						anim.AnimationId = "rbxassetid://"..AnimationIdBox.Value
-					else
-						anim.AnimationId = "rbxassetid://"..animObj
-					end
+					anim.AnimationId = "rbxassetid://"..(success and animId or AnimationIdBox.Value)
 
-					local loaded, result = pcall(function()
+					local ok, result = pcall(function()
 						return entityLibrary.character.Humanoid.Animator:LoadAnimation(anim)
 					end)
 
-					if loaded and result then
+					if ok and result then
 						playedAnim = result
-						lplr.Character.Humanoid.CameraOffset = Vector3.new(0, -1.5, 0)
-						lplr.Character.HumanoidRootPart.Size = Vector3.new(2, 3, 1.1)
+						local hum = entityLibrary.character:FindFirstChild("Humanoid")
+						local root = entityLibrary.character:FindFirstChild("HumanoidRootPart")
+
+						if hum and root then
+							hum.CameraOffset = Vector3.new(0, -1.5, 0)
+							root.Size = Vector3.new(2, 3, 1.1)
+						end
+
 						playedAnim.Priority = Enum.AnimationPriority.Action4
 						playedAnim.Looped = true
 						playedAnim:Play()
 						playedAnim:AdjustSpeed(0)
+
 						table.insert(InvisibleExploit.Connections, playedAnim.Stopped:Connect(function()
 							if InvisibleExploit.Enabled then
 								InvisibleExploit.ToggleButton(false)
@@ -13175,14 +13183,14 @@ run(function()
 							end
 						end))
 					else
-						warningNotification("InvisibleExploit", "failed to load anim : "..(result or "invalid animation id"), 5)
+						warningNotification("InvisibleExploit", "failed to load anim: "..(result or "invalid animation id"), 5)
 					end
 				end
 
 				playAnimation()
 
 				table.insert(InvisibleExploit.Connections, lplr.CharacterAdded:Connect(function()
-					repeat task.wait() until entityLibrary.isAlive or not InvisibleExploit.Enabled
+					repeat task.wait() until isAlive() or not InvisibleExploit.Enabled
 					task.wait(0.5)
 					if not InvisibleExploit.Enabled then return end
 					playAnimation()
@@ -13196,4 +13204,4 @@ run(function()
 			end
 		end
 	})
-end)																																																																																																																																																																																							
+end)
